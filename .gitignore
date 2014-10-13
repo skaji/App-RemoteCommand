@@ -1,0 +1,12 @@
+/*.bs
+/*.c
+/*.o
+/*.old
+/App-RemoteCommand-*
+/MYMETA.*
+/Makefile
+/blib
+/pm_to_blib
+/MANIFEST
+/local
+/cpanfile.snapshot

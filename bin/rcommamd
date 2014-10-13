@@ -1,0 +1,38 @@
+#!perl
+use strict;
+use warnings;
+use utf8;
+use App::RemoteCommand;
+
+exit App::RemoteCommand->new->parse_options(@ARGV)->run;
+
+__END__
+
+=head1 NAME
+
+rcommand - simple remote command launcher
+
+=head1 SYNOPSIS
+
+    > rcommand [OPTIONS] HOST COMMAND...
+
+    Options:
+    -A, --ask-sudo-password  raise prompt for sudo password first
+    -s, --script             execute local script file instead of COMMAND args
+        --sudo-password      set sudo password
+    -C, --concurrency        parallel concurrency, default 5
+        --append-hostname    append hostname to each output line, default on
+        --append-time        append time to each output line, default off
+    -h, --help               show this help
+    -v, --version            show version
+
+    Eg:
+    > rcommand example.jp uname
+    > rcommand --script foo.pl example.jp
+    > rcommand --ask-sudo-password -- example.jp,example.com sudo rm -rf /tmp/trash
+
+=head1 AUTHOR
+
+Shoichi Kaji
+
+=cut
