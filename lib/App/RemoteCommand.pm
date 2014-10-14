@@ -12,6 +12,7 @@ use Net::OpenSSH;
 use POSIX qw(strftime setsid);
 use Parallel::ForkManager;
 use Pod::Usage 'pod2usage';
+use Errno ();
 
 use constant CHUNK_SIZE => 64 * 1024;
 
@@ -99,6 +100,13 @@ sub make_command {
 sub piping {
     my ($self, $host, $in_fh, $out_fh, $keep) = @_;
     my $len = sysread $in_fh, my $buffer, CHUNK_SIZE;
+    if (!defined $len) {
+        if ($! == Errno::EIO) { # this happens when use ssh proxy, so skip
+        } else {
+            warn "[$host] sysread error: $!\n";
+        }
+        return 0;
+    }
     if ($len == 0) {
         return 0;
     }
@@ -128,7 +136,17 @@ sub do_ssh {
     my ($self, $host) = @_;
     my @command = @{$self->{command}};
 
-    my $ssh = Net::OpenSSH->new($host);
+    my $ssh = Net::OpenSSH->new($host,
+        strict_mode => 0,
+        timeout => 5,
+        kill_ssh_on_timeout => 1,
+        master_opts => [
+            -o => "StrictHostKeyChecking=no",
+            -o => "UserKnownHostsFile=/dev/null",
+            -o => "LogLevel=quiet",
+        ],
+    );
+
     die $ssh->error, "\n" if $ssh->error;
 
     my $do_clean = sub {};
