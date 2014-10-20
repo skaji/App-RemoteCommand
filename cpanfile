@@ -3,6 +3,7 @@ requires 'IO::Prompt';
 requires 'Net::OpenSSH';
 requires 'Parallel::ForkManager';
 requires 'IO::Pty';
+requires 'String::Glob::Permute';
 
 on test => sub {
     requires 'Test::More', '0.98';

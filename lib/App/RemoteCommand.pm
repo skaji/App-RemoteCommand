@@ -13,6 +13,7 @@ use POSIX qw(strftime setsid);
 use Parallel::ForkManager;
 use Pod::Usage 'pod2usage';
 use Errno ();
+use String::Glob::Permute qw(string_glob_permute);
 
 use constant CHUNK_SIZE => 64 * 1024;
 
@@ -201,7 +202,7 @@ sub do_ssh {
 
 sub parse_host_arg {
     my ($self, $host_arg) = @_;
-    [ split /\s*,\s*/, $host_arg ];
+    [ string_glob_permute $host_arg ];
 }
 
 sub parse_options {

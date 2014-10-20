@@ -29,7 +29,13 @@ rcommand - simple remote command launcher
     Eg:
     > rcommand example.jp uname
     > rcommand --script foo.pl example.jp
-    > rcommand --ask-sudo-password -- example.jp,example.com sudo rm -rf /tmp/trash
+    > rcommand --ask-sudo-password -- '{www,www2}.example.com' sudo rm -rf /tmp/trash
+
+    Host Syntax:
+    HOST string will be expand by String::Glob::Permute::string_glob_permute
+    function. For example,
+
+        '{prod,qa}[01-02].com' #=> prod01.com, prod02.com, qa01.com, aq02.com
 
 =head1 AUTHOR
 
