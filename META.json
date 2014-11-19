@@ -30,6 +30,7 @@
             "IO::Pty" : "0",
             "Net::OpenSSH" : "0",
             "Parallel::ForkManager" : "0",
+            "String::Glob::Permute" : "0",
             "perl" : "5.008005"
          }
       },
