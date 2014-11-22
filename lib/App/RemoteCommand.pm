@@ -170,7 +170,7 @@ sub do_ssh {
         if ($select->can_read(1)) {
             my $len = $self->piping($host, $pty => \*STDOUT, \$keep);
             if ($len == 0) {
-                print STDOUT $self->output($host, $keep) if $keep;
+                print STDOUT $self->format->($host, $keep) if $keep;
                 last;
             }
             if ($keep =~ /\Q$SUDO_PROMPT\E$/) {
