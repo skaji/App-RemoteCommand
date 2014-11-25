@@ -202,7 +202,8 @@ sub do_ssh {
 
 sub parse_host_arg {
     my ($self, $host_arg) = @_;
-    [ string_glob_permute $host_arg ];
+    my %uniq;
+    [ grep { !$uniq{$_}++ } string_glob_permute $host_arg ];
 }
 
 sub parse_options {
