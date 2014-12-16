@@ -16,26 +16,30 @@ rcommand - simple remote command launcher
 
     > rcommand [OPTIONS] HOST COMMAND...
 
-    Options:
-    -A, --ask-sudo-password  raise prompt for sudo password first
+    OPTIONS:
     -s, --script             execute local script file instead of COMMAND args
+    -a, --ask-sudo-password  raise prompt for sudo password first
         --sudo-password      set sudo password
-    -C, --concurrency        parallel concurrency, default 5
+    -c, --concurrency        parallel concurrency, default 5
+    -u, --user               ssh username
+    -i, --identity           ssh identity file
         --append-hostname    append hostname to each output line, default on
         --append-time        append time to each output line, default off
     -h, --help               show this help
     -v, --version            show version
 
-    Eg:
+    EXAMPLE:
     > rcommand example.jp uname
     > rcommand --script foo.pl example.jp
-    > rcommand --ask-sudo-password -- '{www,www2}.example.com' sudo rm -rf /tmp/trash
+    > rcommand --ask-sudo-password -- '{www1,www2}.example.com' sudo rm -rf /tmp/trash
 
-    Host Syntax:
-    HOST string will be expand by String::Glob::Permute::string_glob_permute
-    function. For example,
+    HOST SYNTAX:
+    HOST will be expand by String::Glob::Permute::string_glob_permute function.
+    For example,
 
-        '{prod,qa}[01-02].com' #=> prod01.com, prod02.com, qa01.com, aq02.com
+     'example.{com,jp}'     => example.com, example.jp
+     'example[001-003].com' => example001.com, example002.com, example003.com
+     '{prod,qa}[01-02].com' => prod01.com, prod02.com, qa01.com, qa02.com
 
 =head1 AUTHOR
 

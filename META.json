@@ -28,6 +28,7 @@
          "requires" : {
             "IO::Prompt" : "0",
             "IO::Pty" : "0",
+            "List::MoreUtils" : "0",
             "Net::OpenSSH" : "0",
             "Parallel::ForkManager" : "0",
             "String::Glob::Permute" : "0",

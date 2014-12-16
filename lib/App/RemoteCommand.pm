@@ -2,22 +2,23 @@ package App::RemoteCommand;
 use strict;
 use warnings;
 use utf8;
+use Errno ();
 use File::Basename qw(basename);
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use IO::Handle;
 use IO::Prompt 'prompt';
 use IO::Pty;
 use IO::Select;
+use List::MoreUtils qw(uniq);
 use Net::OpenSSH;
 use POSIX qw(strftime setsid);
 use Parallel::ForkManager;
 use Pod::Usage 'pod2usage';
-use Errno ();
 use String::Glob::Permute qw(string_glob_permute);
 
 use constant CHUNK_SIZE => 64 * 1024;
 
-my $SUDO_PROMPT = sprintf "sudo password (asking by %s): ", basename($0);
+my $SUDO_PROMPT = sprintf "sudo password (asking with %s): ", basename($0);
 
 STDOUT->autoflush(1);
 
@@ -52,20 +53,16 @@ sub run {
     });
 
     setsid;
-    my $signal_recieved;
-    local $SIG{INT} = local $SIG{TERM} = sub {
+    my %signal_recieved;
+    $SIG{INT} = $SIG{TERM} = sub {
         my $signal = shift;
         local $SIG{$signal} = "IGNORE";
         kill $signal => -$$;
-        $signal_recieved++;
+        $signal_recieved{$signal}++;
     };
 
     for my $host (@{ $self->{host} }) {
-        last if $signal_recieved;
-        if ( (grep {$exit{$_}{exit} || $exit{$_}{signal}} sort keys %exit) > 2) {
-            warn "More than 2 hosts failed, thus stop executing.\n";
-            last; # XXX
-        }
+        last if %signal_recieved;
         $pm->start($host) and next;
         $SIG{INT} = $SIG{TERM} = "DEFAULT";
         my $exit = eval { $self->do_ssh($host) };
@@ -77,14 +74,14 @@ sub run {
         $pm->finish($exit);
     }
 
-    while (keys %{$pm->{processes}}) {
+    while (%{$pm->{processes}}) {
         $pm->wait_all_children;
     }
 
     my @success = grep { $exit{$_}{exit} == 0 && !$exit{$_}{signal} } sort keys %exit;
-    my @fail    = grep { $exit{$_}{exit} != 0 || $exit{$_}{signal}  } sort keys %exit;
+    my @fail    = grep { $exit{$_}{exit} != 0 ||  $exit{$_}{signal} } sort keys %exit;
     print STDERR "\e[32mSUCESS\e[m $_\n" for @success;
-    print STDERR "\e[31mFAIL\e[m $_\n" for @fail;
+    print STDERR "\e[31mFAIL\e[m $_\n"   for @fail;
     return @fail ? 1 : 0;
 }
 
@@ -102,7 +99,8 @@ sub piping {
     my ($self, $host, $in_fh, $out_fh, $keep) = @_;
     my $len = sysread $in_fh, my $buffer, CHUNK_SIZE;
     if (!defined $len) {
-        if ($! == Errno::EIO) { # this happens when use ssh proxy, so skip
+        if ($! == Errno::EIO) {
+            # this happens when use ssh proxy, so skip
         } else {
             warn "[$host] sysread error: $!\n";
         }
@@ -121,7 +119,7 @@ sub piping {
         $$keep .= $split[0];
     }
 
-    if ($buffer =~ /\n$/) {
+    if ($$keep =~ /\n$/) {
         print {$out_fh} $self->format->($host, $$keep);
         $$keep = "";
     }
@@ -138,6 +136,8 @@ sub do_ssh {
     my @command = @{$self->{command}};
 
     my $ssh = Net::OpenSSH->new($host,
+        user => $self->{user},
+        ( $self->{identity} ? (key_path => $self->{identity}) : () ),
         strict_mode => 0,
         timeout => 5,
         kill_ssh_on_timeout => 1,
@@ -202,23 +202,23 @@ sub do_ssh {
 
 sub parse_host_arg {
     my ($self, $host_arg) = @_;
-    my %uniq;
-    [ grep { !$uniq{$_}++ } string_glob_permute $host_arg ];
+    [ uniq string_glob_permute($host_arg) ];
 }
 
 sub parse_options {
     my ($self, @argv) = @_;
     local @ARGV = @argv;
     GetOptions
-        "concurrency|C=i"     => \($self->{concurrency} = 5),
-        "help|h"              => sub { pod2usage(0) },
+        "c|concurrency=i"     => \($self->{concurrency} = 5),
+        "h|help"              => sub { pod2usage(0) },
+        "u|user=s"            => \($self->{user} = $ENV{USER}),
+        "i|identity=s"        => \($self->{identity}),
+        "s|script=s"          => \($self->{script}),
+        "v|version"           => sub { printf "%s %s\n", __PACKAGE__, $VERSION; exit },
+        "a|ask-sudo-password" => \(my $ask_sudo_password),
         "sudo-password=s"     => \($self->{sudo_password}),
-        "ask-sudo-password|A" => \(my $ask_sudo_password),
         "append-hostname!"    => \(my $append_hostname = 1),
         "append-time!"        => \(my $append_time),
-        "user=s"              => \($self->{user} = $ENV{USER}),
-        "script|s=s"          => \($self->{script}),
-        "version|v"           => sub { printf "%s %s\n", __PACKAGE__, $VERSION; exit },
     or pod2usage(1);
 
     my ($host_arg, @command) = @ARGV;
