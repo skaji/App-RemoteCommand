@@ -52,19 +52,19 @@ sub run {
         $exit{$host} = { exit => $exit, signal => $signal };
     });
 
-    setsid;
-    my %signal_recieved;
+    my $signal_recieved;
     $SIG{INT} = $SIG{TERM} = sub {
+        $signal_recieved++;
         my $signal = shift;
-        local $SIG{$signal} = "IGNORE";
-        kill $signal => -$$;
-        $signal_recieved{$signal}++;
+        my @pid = keys %{$pm->{processes}};
+        kill $signal, @pid;
     };
 
     for my $host (@{ $self->{host} }) {
-        last if %signal_recieved;
+        last if $signal_recieved;
         $pm->start($host) and next;
-        $SIG{INT} = $SIG{TERM} = "DEFAULT";
+        $SIG{INT}  = "DEFAULT";
+        $SIG{TERM} = "DEFAULT";
         my $exit = eval { $self->do_ssh($host) };
         if (my $e = $@) {
             chomp $e;
