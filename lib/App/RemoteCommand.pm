@@ -119,7 +119,7 @@ sub piping {
         $$keep .= $split[0];
     }
 
-    if ($$keep =~ /\n$/) {
+    if ($buffer =~ /\n$/) {
         print {$out_fh} $self->format->($host, $$keep);
         $$keep = "";
     }
