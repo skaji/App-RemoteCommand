@@ -11,7 +11,7 @@ use IO::Pty;
 use IO::Select;
 use List::MoreUtils qw(uniq);
 use Net::OpenSSH;
-use POSIX qw(strftime setsid);
+use POSIX qw(strftime);
 use Parallel::ForkManager;
 use Pod::Usage 'pod2usage';
 use String::Glob::Permute qw(string_glob_permute);
