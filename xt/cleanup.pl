@@ -13,8 +13,7 @@ my $remove;
 for my $line (@content) {
     if ( $line =~ /^Host example00[1-3]/ ) {
         $remove = 1;
-    }
-    if ( $line =~ /^$/ ) {
+    } elsif ( $line =~ /^\S/ && $line !~ /^Host example00[1-3]/ ) {
         $remove = 0;
     }
     push @new_content, $line unless $remove;

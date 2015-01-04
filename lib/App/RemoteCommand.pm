@@ -88,7 +88,7 @@ sub run {
 sub make_command {
     my ($self, @command) = @_;
     my @prefix = ("env", "SUDO_PROMPT=$SUDO_PROMPT");
-    if (@command == 1 && $command[0] =~ /\s/) {
+    if (@command == 1) {
         (@prefix, "bash", "-c", $command[0]);
     } else {
         (@prefix, @command);
@@ -159,7 +159,7 @@ sub do_ssh {
     if (my $script = $self->{script}) {
         my $name = sprintf "/tmp/%s.%d.%d.%d", basename($0), time, $$, rand(1000);
         $ssh->scp_put( $script, $name ) or die $internal_error->();
-        $do_clean = sub { $ssh->system("rm", "-f", $name) }; # don't check
+        $do_clean = sub { $ssh->system("rm", "-f", $name) }; # don't check error
         $ssh->system("chmod", "700", $name) or do { $do_clean->(); die $internal_error->() };
         @command = ($name);
     }
@@ -170,8 +170,9 @@ sub do_ssh {
         my $signal = shift;
         close $pty;
         waitpid $pid, 0;
-        # TODO if the child ssh slave process have already recieved signal,
-        # then it would die, and we cannot do_clean...
+        # TODO if the child master ssh process have already recieved signal
+        # (this happens when you hit Ctrl+C and send SIGINT to all process group),
+        # then ssh connection would be broken, and $do_clean doesn't work...
         $do_clean->();
         die $internal_error->("catch signal $signal, thus die");
     } for qw(INT TERM);
