@@ -14,7 +14,7 @@ rcommand - simple remote command launcher
 
 =head1 SYNOPSIS
 
-    > rcommand [OPTIONS] HOST COMMAND...
+    > rcommand [OPTIONS] HOSTS COMMANDS...
 
     OPTIONS:
     -s, --script             execute local script file instead of COMMAND args
@@ -28,21 +28,27 @@ rcommand - simple remote command launcher
     -h, --help               show this help
     -v, --version            show version
 
-    EXAMPLE:
-    > rcommand example.jp uname
+    EXAMPLES:
+    > rcommand example.jp 'uname -a'
     > rcommand --script foo.pl example.jp
     > rcommand --ask-sudo-password -- '{www1,www2}.example.com' sudo rm -rf /tmp/trash
 
     HOST SYNTAX:
-    HOST will be expand by String::Glob::Permute::string_glob_permute function.
+    HOSTS will be expand by String::Glob::Permute::string_glob_permute function.
     For example,
 
      'example.{com,jp}'     => example.com, example.jp
      'example[001-003].com' => example001.com, example002.com, example003.com
      '{prod,qa}[01-02].com' => prod01.com, prod02.com, qa01.com, qa02.com
 
+=head1 LICENSE
+
+Copyright (C) Shoichi Kaji.
+
+This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+
 =head1 AUTHOR
 
-Shoichi Kaji
+Shoichi Kaji E<lt>skaji@cpan.orgE<gt>
 
 =cut

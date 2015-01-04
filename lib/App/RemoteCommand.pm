@@ -80,7 +80,7 @@ sub run {
 
     my @success = grep { $exit{$_}{exit} == 0 && !$exit{$_}{signal} } sort keys %exit;
     my @fail    = grep { $exit{$_}{exit} != 0 ||  $exit{$_}{signal} } sort keys %exit;
-    print STDERR "\e[32mSUCESS\e[m $_\n" for @success;
+    print STDERR "\e[32mSUCCESS\e[m $_\n" for @success;
     print STDERR "\e[31mFAIL\e[m $_\n"   for @fail;
     return @fail ? 1 : 0;
 }
@@ -102,7 +102,7 @@ sub piping {
         if ($! == Errno::EIO) {
             # this happens when use ssh proxy, so skip
         } else {
-            warn "[$host] sysread error: $!\n";
+            print STDERR $self->format->($host, "Internal error, sysread: $!");
         }
         return 0;
     }
@@ -148,18 +148,33 @@ sub do_ssh {
         ],
     );
 
-    die $ssh->error, "\n" if $ssh->error;
+    my $internal_error = sub {
+        my $error = shift || $ssh->error || "";
+        $self->format->($host, "Internal error, $error");
+    };
+
+    die $internal_error->() if $ssh->error;
 
     my $do_clean = sub {};
     if (my $script = $self->{script}) {
-        my $name = sprintf "/tmp/%s.%d.%d.%d", basename($script), time, $$, rand(1000);
-        $ssh->scp_put( $script, $name ) or die $ssh->error;
-        $do_clean = sub { $ssh->system("rm", "-f", $name) };
-        $ssh->system("chmod", "744", $name) or do { $do_clean->(); die $ssh->error };
+        my $name = sprintf "/tmp/%s.%d.%d.%d", basename($0), time, $$, rand(1000);
+        $ssh->scp_put( $script, $name ) or die $internal_error->();
+        $do_clean = sub { $ssh->system("rm", "-f", $name) }; # don't check
+        $ssh->system("chmod", "700", $name) or do { $do_clean->(); die $internal_error->() };
         @command = ($name);
     }
     my ($pty, $pid) = $ssh->open2pty($self->make_command(@command))
-        or do { $do_clean->(); die $ssh->error, "\n" };
+        or do { $do_clean->(); die $internal_error->() };
+
+    $SIG{$_} = sub {
+        my $signal = shift;
+        close $pty;
+        waitpid $pid, 0;
+        # TODO if the child ssh slave process have already recieved signal,
+        # then it would die, and we cannot do_clean...
+        $do_clean->();
+        die $internal_error->("catch signal $signal, thus die");
+    } for qw(INT TERM);
 
     my $select = IO::Select->new($pty);
     my $keep = "";
@@ -184,17 +199,17 @@ sub do_ssh {
                 syswrite $pty, "$sudo_password\n";
                 $need_password = 0;
             } else {
-                $error = "have to provide sudo passowrd first";
+                $error = "have to provide sudo passowrd first, try again with --ask-sudo-password option.";
                 last;
             }
         }
     }
-    close $pty or die "close pty: $!\n";
+    close $pty or die $internal_error->("close pty: $!");
     waitpid $pid, 0;
     my $exit = $?;
     $do_clean->();
     if ($error) {
-        die "$error\n";
+        die $internal_error->($error);
     } else {
         return $exit >> 8;
     }
@@ -257,7 +272,9 @@ App::RemoteCommand - simple remote command launcher
 
 =head1 SYNOPSIS
 
-    > rcommand [OPTIONS] HOST COMMAND...
+    > rcommand [OPTIONS] HOSTS COMMANDS...
+    OR
+    > rcommand --script local-script.sh HOSTS
 
 =head1 DESCRIPTION
 
@@ -276,6 +293,13 @@ App::RemoteCommand is a simple remote command launcher. The features are:
 =item * report success/fail summary
 
 =back
+
+=head1 CAVEATS
+
+Currently this module assumes you can ssh the target hosts
+without password or passphrase.
+So if your ssh identity (ssh private key) requires a passphrase,
+please use C<ssh-agent>.
 
 =head1 LICENSE
 
