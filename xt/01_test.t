@@ -4,7 +4,7 @@ use utf8;
 use Test::More;
 use xt::Util;
 
-unless ( system("ssh example001 w &>/dev/null") == 0 ) {
+unless ( -d ".git" && system("ssh example001 w &>/dev/null") == 0 ) {
     plan skip_all => "Please setup virtual machines first";
 }
 
