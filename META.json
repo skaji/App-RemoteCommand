@@ -1,5 +1,5 @@
 {
-   "abstract" : "simple remote command launcher",
+   "abstract" : "simple remote command launcher via ssh",
    "author" : [
       "Shoichi Kaji <skaji@cpan.org>"
    ],

@@ -1,16 +1,16 @@
 # NAME
 
-App::RemoteCommand - simple remote command launcher
+App::RemoteCommand - simple remote command launcher via ssh
 
 # SYNOPSIS
 
-    > rcommand [OPTIONS] HOSTS COMMANDS...
-    OR
-    > rcommand --script local-script.sh HOSTS
+    > rcommand [OPTIONS] HOSTS COMMANDS
+    > rcommand [OPTIONS] --script SCRIPT HOSTS
+    > rcommand [OPTIONS] --host-file FILE COMMANDS
 
 # DESCRIPTION
 
-App::RemoteCommand is a simple remote command launcher. The features are:
+App::RemoteCommand is a simple remote command launcher via ssh. The features are:
 
 - execute remote command in parallel
 - remember sudo password first, and never ask again

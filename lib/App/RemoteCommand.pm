@@ -253,11 +253,11 @@ sub parse_options {
     my @command = @ARGV;
 
     if (!@command && !$self->{script}) {
-        warn "COMMAND or --script option is required\n";
+        warn "COMMANDS or --script option is required\n";
         pod2usage(1);
     }
     if ($self->{script} && !-r $self->{script}) {
-        die "Cannot read '$self->{script}'\n";
+        die "Cannot read script '$self->{script}'\n";
     }
 
     $self->{format} = $self->make_format(
@@ -283,17 +283,17 @@ __END__
 
 =head1 NAME
 
-App::RemoteCommand - simple remote command launcher
+App::RemoteCommand - simple remote command launcher via ssh
 
 =head1 SYNOPSIS
 
-    > rcommand [OPTIONS] HOSTS COMMANDS...
-    OR
-    > rcommand --script local-script.sh HOSTS
+    > rcommand [OPTIONS] HOSTS COMMANDS
+    > rcommand [OPTIONS] --script SCRIPT HOSTS
+    > rcommand [OPTIONS] --host-file FILE COMMANDS
 
 =head1 DESCRIPTION
 
-App::RemoteCommand is a simple remote command launcher. The features are:
+App::RemoteCommand is a simple remote command launcher via ssh. The features are:
 
 =over 4
 
