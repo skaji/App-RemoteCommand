@@ -1,0 +1,21 @@
+$key = <<KEY
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6m3sDBs55bGiyb35idIRx7NWGVl0P9zh9SZniclZFeYRqtlknpOBQ3H6jUeOORSCqrOYqmg2/e/2FDFr2BfhSnYnI45BqBKEgxs8YMkrqKLv6x9ntA9foiW01NZV+8dNsarSSxyGAX/+huLfITe48fPvZHp4QxpcvC6Xtmx6MQJoUZNWIoPLjslOJzHbKj8V85kkE3kXfYs5Grz7K3nbXM7jFy+2A461VL6ARYscHmSR5Xmj+6Yvc6w2UWmGv7+ilyrtwDYPs5Sh56T1zKCr9tNEIGZYJW/tIOgUthgt2rrfpt2Yk5B6LSeTcj1tilQ+1BZ8IXZic16SNuzYVLYZV skaji@MBP2013.local
+KEY
+
+$script = <<SCRIPT
+useradd -m --shell /bin/bash skaji
+echo 'skaji:skaji' | chpasswd
+echo 'skaji ALL=(ALL) ALL' > /etc/sudoers.d/skaji
+install -d -g skaji -o skaji -m 700 /home/skaji/.ssh
+echo '#{$key}' > /home/skaji/.ssh/authorized_keys
+chown skaji:skaji /home/skaji/.ssh/authorized_keys
+chmod 400 /home/skaji/.ssh/authorized_keys
+echo '' >> /etc/ssh/sshd_config
+echo 'UseDNS no' >> /etc/ssh/sshd_config
+/usr/sbin/service ssh restart
+SCRIPT
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.provision "shell", inline: $script
+end
