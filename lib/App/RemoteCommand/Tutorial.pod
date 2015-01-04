@@ -38,7 +38,7 @@ Add C<www002.example.com> too:
     SUCCESS www001.example.com
     SUCCESS www002.example.com
 
-Oh, you can use range notation C<< [-] >> instead of using just separator C<< , >>:
+Oh, you can use range notation C<< [*-*] >> instead of using just separator C<< , >>:
 
     > rcommand 'www[001-003].example.com' uname
     [www001.example.com] Linux
@@ -48,7 +48,7 @@ Oh, you can use range notation C<< [-] >> instead of using just separator C<< , 
     SUCCESS www002.example.com
     SUCCESS www003.example.com
 
-and choice notation C<< {,} >>:
+and choice notation C<< {*,*} >>:
 
     > rcommand 'www001.example.{com,jp}' uname
     [www001.example.com] Linux
@@ -95,7 +95,7 @@ Note that the SUCCESS/FAIL summary is displayed in the end.
 If you want to run command which includes C<< sudo >> command,
 please execute C<< rcommand >> with C<< --ask-sudo-password  >> option:
 
-    > rcommand --ask-sudo-password 'www00[1-2].example.jp' 'sudo service cron restart'
+    > rcommand --ask-sudo-password 'www00[1-2].example.jp' sudo service cron restart
     sudo password (asking with rcommand):
     [www002.example.jp] sudo password (asking with rcommand):
     [www002.example.jp]
@@ -119,14 +119,14 @@ You can specify target hosts by host file with C<< --host-file >> option:
     [www001.example.jp]  15:35:12 up  2:00,  2 users,  load average: 0.03, 0.03, 0.05
     ...
 
-You can append current time to each output lines with C<< --append-time >> option:
+You can append current time to each output line with C<< --append-time >> option:
 
     > rcommand --append-time www001.example.jp 'echo 1; sleep 1; echo 2'
     [2015-01-05 00:36:58][--append-time] 1
     [2015-01-05 00:36:59][--append-time] 2
     ...
 
-You can remove hostname in each output lines with C<< --no-append-hostname >> option:
+You can remove hostname in each output line with C<< --no-append-hostname >> option:
 
     > rcommand --no-append-hostname www001.example.jp 'uname -a'
     Linux vagrant-ubuntu-trusty-64 3.13.0-30-generic #55-Ubuntu SMP Fri Jul 4 21:40:53 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux
@@ -135,7 +135,7 @@ You can remove hostname in each output lines with C<< --no-append-hostname >> op
 By default, C<< rcommand >> execute command in 5 parallel.
 You can change it with C<< --concurrency >> option:
 
-    > rcommand --concurrency 1 -a 'www00[1-3].example.{jp,com}' 'sudo service httpd stop'
+    > rcommand --concurrency 1 -a 'www00[1-3].example.{jp,com}' sudo service httpd stop
     ...
 
 =item 5. help
