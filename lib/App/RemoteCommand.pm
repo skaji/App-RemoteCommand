@@ -281,6 +281,8 @@ __END__
 
 =encoding utf-8
 
+=for stopwords passphrase
+
 =head1 NAME
 
 App::RemoteCommand - simple remote command launcher via ssh
