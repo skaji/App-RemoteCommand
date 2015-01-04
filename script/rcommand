@@ -14,10 +14,13 @@ rcommand - simple remote command launcher
 
 =head1 SYNOPSIS
 
-    > rcommand [OPTIONS] HOSTS COMMANDS...
+    > rcommand [OPTIONS] HOSTS COMMANDS
+    > rcommand [OPTIONS] --script SCRIPT HOSTS
+    > rcommand [OPTIONS] --host-file FILE COMMANDS
 
     OPTIONS:
-    -s, --script             execute local script file instead of COMMAND args
+    -s, --script             execute local script file instead of COMMANDS argument
+    -H, --host-file          set target hosts by host listed file
     -a, --ask-sudo-password  raise prompt for sudo password first
         --sudo-password      set sudo password
     -c, --concurrency        parallel concurrency, default 5
@@ -31,6 +34,7 @@ rcommand - simple remote command launcher
     EXAMPLES:
     > rcommand example.jp 'uname -a'
     > rcommand --script foo.pl example.jp
+    > rcommand --host-file host.txt 'uptime; top -b -n 1'
     > rcommand --ask-sudo-password -- '{www1,www2}.example.com' sudo rm -rf /tmp/trash
 
     HOST SYNTAX:

@@ -63,6 +63,14 @@ subtest one => sub {
         like $r->stderr, qr/SUCCESS/;
         like $r->stdout, qr/\[example001\] Linux\n/;
     };
+
+    subtest test => sub {
+        my $host_file = tempfile("\n\n  \n# comment\nexample001");
+        my $r = rcommand("--host-file", $host_file, "uname");
+        is $r->exit, 0;
+        like $r->stderr, qr/SUCCESS/;
+        is $r->stdout, "[example001] Linux\n";
+    };
 };
 
 subtest three => sub {
@@ -107,6 +115,14 @@ subtest three => sub {
     subtest test => sub {
         my $script = tempfile("#!/bin/bash\nsudo uname\n");
         my $r = rcommand("--script", $script, "--sudo-password", "skaji", "example00[1-3]");
+        is $r->exit, 0;
+        like $r->stderr, qr/SUCCESS.*SUCCESS.*SUCCESS/sm;
+        like $r->stdout, qr/\[example00$_\] Linux\n/ for 1..3;
+    };
+
+    subtest test => sub {
+        my $host_file = tempfile("example001\nexample002\nexample003\n\n");
+        my $r = rcommand("-H", $host_file, "uname");
         is $r->exit, 0;
         like $r->stderr, qr/SUCCESS.*SUCCESS.*SUCCESS/sm;
         like $r->stdout, qr/\[example00$_\] Linux\n/ for 1..3;

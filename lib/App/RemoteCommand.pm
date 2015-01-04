@@ -221,6 +221,17 @@ sub parse_host_arg {
     [ uniq string_glob_permute($host_arg) ];
 }
 
+sub parse_host_file {
+    my ($self, $host_file) = @_;
+    open my $fh, "<", $host_file or die "Cannot open '$host_file': $!\n";
+    my @host;
+    while (my $line = <$fh>) {
+        $line =~ s/^\s+//; $line =~ s/\s+$//;
+        push @host, $line if $line =~ /^[^#\s]/;
+    }
+    [ uniq @host ];
+}
+
 sub parse_options {
     my ($self, @argv) = @_;
     local @ARGV = @argv;
@@ -232,12 +243,14 @@ sub parse_options {
         "s|script=s"          => \($self->{script}),
         "v|version"           => sub { printf "%s %s\n", __PACKAGE__, $VERSION; exit },
         "a|ask-sudo-password" => \(my $ask_sudo_password),
+        "H|host-file=s"       => \(my $host_file),
         "sudo-password=s"     => \($self->{sudo_password}),
         "append-hostname!"    => \(my $append_hostname = 1),
         "append-time!"        => \(my $append_time),
     or pod2usage(1);
 
-    my ($host_arg, @command) = @ARGV;
+    my $host_arg = $host_file ? undef : shift @ARGV;
+    my @command = @ARGV;
 
     if (!@command && !$self->{script}) {
         warn "COMMAND or --script option is required\n";
@@ -256,7 +269,8 @@ sub parse_options {
         my $password = prompt $SUDO_PROMPT, -echo => undef;
         $self->{sudo_password} = $password;
     }
-    $self->{host} = $self->parse_host_arg($host_arg);
+    $self->{host} = $host_file ? $self->parse_host_file($host_file)
+                               : $self->parse_host_arg($host_arg);
     $self->{command} = \@command;
     $self;
 
