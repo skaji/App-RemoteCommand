@@ -1,5 +1,6 @@
-Revision history for App::RemoteCommand
+Revision history for Perl extension App-RemoteCommand
 
-0.01  2014-10-13T15:41+09:00
+{{$NEXT}}
 
-    initial version
+    - original version
+

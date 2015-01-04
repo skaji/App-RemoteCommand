@@ -246,7 +246,6 @@ sub parse_options {
 
 }
 
-
 1;
 __END__
 
@@ -259,10 +258,6 @@ App::RemoteCommand - simple remote command launcher
 =head1 SYNOPSIS
 
     > rcommand [OPTIONS] HOST COMMAND...
-
-=head1 INSTALL
-
-    > cpanm git://github.com/shoichikaji/App-RemoteCommand.git
 
 =head1 DESCRIPTION
 

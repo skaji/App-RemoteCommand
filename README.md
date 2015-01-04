@@ -6,10 +6,6 @@ App::RemoteCommand - simple remote command launcher
 
     > rcommand [OPTIONS] HOST COMMAND...
 
-# INSTALL
-
-    > cpanm git://github.com/shoichikaji/App-RemoteCommand.git
-
 # DESCRIPTION
 
 App::RemoteCommand is a simple remote command launcher. The features are:

@@ -4,13 +4,13 @@
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Template/0.01",
+   "generated_by" : "Minilla/v2.3.0, CPAN::Meta::Converter version 2.143240",
    "license" : [
       "perl_5"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
-      "version" : 2
+      "version" : "2"
    },
    "name" : "App-RemoteCommand",
    "no_index" : {
@@ -18,12 +18,28 @@
          "t",
          "xt",
          "inc",
+         "share",
          "eg",
-         "example",
-         "author"
+         "examples",
+         "author",
+         "builder"
       ]
    },
    "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "Module::Build" : "0.38"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Test::CPAN::Meta" : "0",
+            "Test::MinimumVersion::Fast" : "0.04",
+            "Test::PAUSE::Permissions" : "0.04",
+            "Test::Pod" : "1.41",
+            "Test::Spellunker" : "v0.2.7"
+         }
+      },
       "runtime" : {
          "requires" : {
             "IO::Prompt" : "0",
@@ -42,5 +58,17 @@
       }
    },
    "release_status" : "unstable",
-   "version" : "0.01"
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/shoichikaji/App-RemoteCommand/issues"
+      },
+      "homepage" : "https://github.com/shoichikaji/App-RemoteCommand",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/shoichikaji/App-RemoteCommand.git",
+         "web" : "https://github.com/shoichikaji/App-RemoteCommand"
+      }
+   },
+   "version" : "0.01",
+   "x_authority" : "cpan:SKAJI"
 }
