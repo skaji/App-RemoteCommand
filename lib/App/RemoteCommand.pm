@@ -136,7 +136,7 @@ sub do_ssh {
     my @command = @{$self->{command}};
 
     my $ssh = Net::OpenSSH->new($host,
-        user => $self->{user},
+        ( $self->{user} ? (user => $self->{user}) : () ),
         ( $self->{identity} ? (key_path => $self->{identity}) : () ),
         strict_mode => 0,
         timeout => 5,
@@ -238,7 +238,7 @@ sub parse_options {
     GetOptions
         "c|concurrency=i"     => \($self->{concurrency} = 5),
         "h|help"              => sub { pod2usage(0) },
-        "u|user=s"            => \($self->{user} = $ENV{USER}),
+        "u|user=s"            => \($self->{user}),
         "i|identity=s"        => \($self->{identity}),
         "s|script=s"          => \($self->{script}),
         "v|version"           => sub { printf "%s %s\n", __PACKAGE__, $VERSION; exit },
