@@ -2,6 +2,13 @@ Revision history for Perl extension App-RemoteCommand
 
 {{$NEXT}}
 
+0.02  2015-10-14 01:45:07 JST
+
+    - simplify signal handling; only handle INT signal
+    - able to specify script args
+    - introduce --sudo=USER, --quiet options
+    - deprecate --user, --identity options
+
 0.01 2015-01-04T16:11:15Z
 
     - original version
