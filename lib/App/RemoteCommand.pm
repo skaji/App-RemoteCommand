@@ -12,11 +12,11 @@ use IO::Select;
 use List::MoreUtils qw(uniq);
 use Net::OpenSSH;
 use POSIX qw(strftime);
-use Parallel::ForkManager;
+use Parallel::ForkManager 1.16;
 use Pod::Usage 'pod2usage';
 use String::Glob::Permute qw(string_glob_permute);
 
-use constant CHUNK_SIZE => 64 * 1024;
+use constant CHUNK_SIZE => 1024 * 1024;
 
 my $SUDO_PROMPT = sprintf "sudo password (asking with %s): ", basename($0);
 
@@ -52,19 +52,17 @@ sub run {
         $exit{$host} = { exit => $exit, signal => $signal };
     });
 
-    my $signal_recieved;
-    $SIG{INT} = $SIG{TERM} = sub {
-        $signal_recieved++;
-        my $signal = shift;
-        my @pid = keys %{$pm->{processes}};
-        kill $signal, @pid;
-    };
+    my $signal_recieved = 0;
+    local $SIG{INT} = sub { $signal_recieved++ };
 
     for my $host (@{ $self->{host} }) {
         last if $signal_recieved;
         $pm->start($host) and next;
-        $SIG{INT}  = "DEFAULT";
-        $SIG{TERM} = "DEFAULT";
+        if ($signal_recieved) {
+            warn $self->format->($host, "Internal error: catch signal INT, so do noting and exit.");
+            $pm->finish(255);
+        }
+        $SIG{INT} = "DEFAULT";
         my $exit = eval { $self->do_ssh($host) };
         if (my $e = $@) {
             chomp $e;
@@ -75,19 +73,22 @@ sub run {
     }
 
     while (%{$pm->{processes}}) {
-        $pm->wait_all_children;
+        $pm->wait_all_children; # XXX perl wait function does not interrupted by signal...
     }
 
     my @success = grep { $exit{$_}{exit} == 0 && !$exit{$_}{signal} } sort keys %exit;
     my @fail    = grep { $exit{$_}{exit} != 0 ||  $exit{$_}{signal} } sort keys %exit;
-    print STDERR "\e[32mSUCCESS\e[m $_\n" for @success;
-    print STDERR "\e[31mFAIL\e[m $_\n"   for @fail;
+    if (!$self->{quiet}) {
+        print STDERR "\e[32mSUCCESS\e[m $_\n" for @success;
+        print STDERR "\e[31mFAIL\e[m $_\n"   for @fail;
+    }
     return @fail ? 1 : 0;
 }
 
 sub make_command {
     my ($self, @command) = @_;
     my @prefix = ("env", "SUDO_PROMPT=$SUDO_PROMPT");
+    push @prefix, "sudo", "-u", $self->{sudo_user} if $self->{sudo_user};
     if (@command == 1) {
         (@prefix, "bash", "-c", $command[0]);
     } else {
@@ -109,7 +110,7 @@ sub piping {
     if ($len == 0) {
         return 0;
     }
-    my @split = split /\r?\n/, $buffer;
+    my @split = split /\x0d\x0a|\x0a|\x0d/, $buffer;
 
     if (@split > 1) {
         print {$out_fh} $self->format->($host, $$keep . $split[0]);
@@ -133,7 +134,6 @@ sub piping {
 
 sub do_ssh {
     my ($self, $host) = @_;
-    my @command = @{$self->{command}};
 
     my $ssh = Net::OpenSSH->new($host,
         ( $self->{user} ? (user => $self->{user}) : () ),
@@ -150,39 +150,34 @@ sub do_ssh {
 
     my $internal_error = sub {
         my $error = shift || $ssh->error || "";
-        $self->format->($host, "Internal error, $error");
+        $self->format->($host, "Internal error: $error");
     };
 
     die $internal_error->() if $ssh->error;
 
     my $do_clean = sub {};
+    my @command;
     if (my $script = $self->{script}) {
         my $name = sprintf "/tmp/%s.%d.%d.%d", basename($0), time, $$, rand(1000);
         $ssh->scp_put( $script, $name ) or die $internal_error->();
         $do_clean = sub { $ssh->system("rm", "-f", $name) }; # don't check error
-        $ssh->system("chmod", "700", $name) or do { $do_clean->(); die $internal_error->() };
-        @command = ($name);
+        $ssh->system("chmod", "555", $name) or do { $do_clean->(); die $internal_error->() };
+        @command = ($name, @{$self->{script_arg}});
+    } else {
+        @command = @{$self->{command}};
     }
     my ($pty, $pid) = $ssh->open2pty($self->make_command(@command))
         or do { $do_clean->(); die $internal_error->() };
 
-    $SIG{$_} = sub {
-        my $signal = shift;
-        close $pty;
-        waitpid $pid, 0;
-        # TODO if the child master ssh process have already recieved signal
-        # (this happens when you hit Ctrl+C and send SIGINT to all process group),
-        # then ssh connection would be broken, and $do_clean doesn't work...
-        $do_clean->();
-        die $internal_error->("catch signal $signal, thus die");
-    } for qw(INT TERM);
+    my $signal_recieved = 0;
+    local $SIG{INT}  = sub { $signal_recieved++ };
 
     my $select = IO::Select->new($pty);
     my $keep = "";
     my $need_password;
     my $error;
     while (1) {
-        last unless kill 0 => $pid;
+        last if $signal_recieved;
         if ($select->can_read(1)) {
             my $len = $self->piping($host, $pty => \*STDOUT, \$keep);
             if ($len == 0) {
@@ -205,11 +200,13 @@ sub do_ssh {
             }
         }
     }
-    close $pty or die $internal_error->("close pty: $!");
+    close $pty;
     waitpid $pid, 0;
     my $exit = $?;
     $do_clean->();
-    if ($error) {
+    if ($signal_recieved) {
+        die $internal_error->("catch signal INT");
+    } elsif ($error) {
         die $internal_error->($error);
     } else {
         return $exit >> 8;
@@ -227,7 +224,7 @@ sub parse_host_file {
     my @host;
     while (my $line = <$fh>) {
         $line =~ s/^\s+//; $line =~ s/\s+$//;
-        push @host, $line if $line =~ /^[^#\s]/;
+        push @host, string_glob_permute($line) if $line =~ /^[^#\s]/;
     }
     [ uniq @host ];
 }
@@ -235,11 +232,14 @@ sub parse_host_file {
 sub parse_options {
     my ($self, @argv) = @_;
     local @ARGV = @argv;
+    my $deprecated = sub {
+        warn "WARNING: --$_[0] option is deprecated, please set it in your ~/.ssh/config\n";
+    };
     GetOptions
         "c|concurrency=i"     => \($self->{concurrency} = 5),
         "h|help"              => sub { pod2usage(0) },
-        "u|user=s"            => \($self->{user}),
-        "i|identity=s"        => \($self->{identity}),
+        "u|user=s"            => sub { $deprecated->("user"); $self->{user} = $_[1] },
+        "i|identity=s"        => sub { $deprecated->("identity"); $self->{identity} = $_[1] },
         "s|script=s"          => \($self->{script}),
         "v|version"           => sub { printf "%s %s\n", __PACKAGE__, $VERSION; exit },
         "a|ask-sudo-password" => \(my $ask_sudo_password),
@@ -247,14 +247,20 @@ sub parse_options {
         "sudo-password=s"     => \($self->{sudo_password}),
         "append-hostname!"    => \(my $append_hostname = 1),
         "append-time!"        => \(my $append_time),
-    or pod2usage(1);
+        "sudo=s"              => \($self->{sudo_user}),
+        "q|quiet"             => \($self->{quiet}),
+    or exit(2);
 
     my $host_arg = $host_file ? undef : shift @ARGV;
-    my @command = @ARGV;
+    if ($self->{script}) {
+        $self->{script_arg} = \@ARGV;
+    } else {
+        $self->{command} = \@ARGV;
+    }
 
-    if (!@command && !$self->{script}) {
+    if (!@{$self->{command} || []} && !$self->{script}) {
         warn "COMMANDS or --script option is required\n";
-        pod2usage(1);
+        exit(2);
     }
     if ($self->{script} && !-r $self->{script}) {
         die "Cannot read script '$self->{script}'\n";
@@ -271,7 +277,6 @@ sub parse_options {
     }
     $self->{host} = $host_file ? $self->parse_host_file($host_file)
                                : $self->parse_host_arg($host_arg);
-    $self->{command} = \@command;
     $self;
 
 }
@@ -320,12 +325,12 @@ please use C<ssh-agent>.
 
 =head1 LICENSE
 
-Copyright (C) Shoichi Kaji.
+Copyright 2015 Shoichi Kaji <skaji@cpan.org>
 
 This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-Shoichi Kaji E<lt>skaji@cpan.orgE<gt>
+Shoichi Kaji
 
 =cut
