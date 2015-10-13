@@ -4,6 +4,7 @@
 /Build.bat
 /blib
 /Makefile
+/Makefile.old
 
 /carton.lock
 /.carton/
@@ -28,3 +29,5 @@ cover_db/
 MYMETA.*
 
 /App-RemoteCommand-*
+
+/pm_to_blib

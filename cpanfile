@@ -3,7 +3,7 @@ requires 'IO::Prompt';
 requires 'IO::Pty';
 requires 'List::MoreUtils';
 requires 'Net::OpenSSH';
-requires 'Parallel::ForkManager';
+requires 'Parallel::ForkManager', '1.16'; # 1.15 has CPU 100% bug
 requires 'String::Glob::Permute';
 
 on test => sub {
