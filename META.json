@@ -4,7 +4,7 @@
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.039, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Dist::Zilla version 5.043, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "perl_5"
    ],
@@ -15,12 +15,12 @@
    "name" : "App-RemoteCommand",
    "no_index" : {
       "directory" : [
-         "t",
-         "xt",
+         "eg",
+         "examples",
          "inc",
          "share",
-         "eg",
-         "examples"
+         "t",
+         "xt"
       ]
    },
    "prereqs" : {
@@ -55,13 +55,13 @@
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/shoichikaji/App-RemoteCommand/issues"
+         "web" : "https://github.com/skaji/App-RemoteCommand/issues"
       },
-      "homepage" : "https://github.com/shoichikaji/App-RemoteCommand",
+      "homepage" : "https://github.com/skaji/App-RemoteCommand",
       "repository" : {
          "type" : "git",
-         "url" : "https://github.com/shoichikaji/App-RemoteCommand.git",
-         "web" : "https://github.com/shoichikaji/App-RemoteCommand"
+         "url" : "https://github.com/skaji/App-RemoteCommand.git",
+         "web" : "https://github.com/skaji/App-RemoteCommand"
       }
    },
    "version" : "0.02"
