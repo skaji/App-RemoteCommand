@@ -8,7 +8,7 @@ use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use IO::Handle;
 use IO::Pty;
 use IO::Select;
-use List::MoreUtils qw(uniq);
+use List::Util qw(uniq);
 use Net::OpenSSH;
 use POSIX qw(strftime);
 use Parallel::ForkManager 1.16;
@@ -338,7 +338,7 @@ please use C<ssh-agent>.
 
 =head1 LICENSE
 
-Copyright 2015 Shoichi Kaji <skaji@cpan.org>
+Copyright 2016 Shoichi Kaji <skaji@cpan.org>
 
 This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 

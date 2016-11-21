@@ -21,7 +21,7 @@ my %WriteMakefileArgs = (
   "NAME" => "App::RemoteCommand",
   "PREREQ_PM" => {
     "IO::Pty" => 0,
-    "List::MoreUtils" => 0,
+    "List::Util" => "1.45",
     "Net::OpenSSH" => 0,
     "Parallel::ForkManager" => "1.16",
     "String::Glob::Permute" => 0,
@@ -39,7 +39,7 @@ my %WriteMakefileArgs = (
 
 my %FallbackPrereqs = (
   "IO::Pty" => 0,
-  "List::MoreUtils" => 0,
+  "List::Util" => "1.45",
   "Net::OpenSSH" => 0,
   "Parallel::ForkManager" => "1.16",
   "String::Glob::Permute" => 0,
