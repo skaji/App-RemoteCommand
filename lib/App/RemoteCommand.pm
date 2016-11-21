@@ -6,7 +6,6 @@ use Errno ();
 use File::Basename qw(basename);
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use IO::Handle;
-use IO::Prompt 'prompt';
 use IO::Pty;
 use IO::Select;
 use List::MoreUtils qw(uniq);
@@ -15,6 +14,20 @@ use POSIX qw(strftime);
 use Parallel::ForkManager 1.16;
 use Pod::Usage 'pod2usage';
 use String::Glob::Permute qw(string_glob_permute);
+use Term::ReadKey 'ReadMode';
+
+sub prompt {
+    my $msg = shift;
+    chomp $msg;
+    STDOUT->printflush($msg);
+    local $SIG{INT} = sub { ReadMode 'restore', \*STDIN; STDOUT->printflush("\n"); exit };
+    ReadMode 'noecho', \*STDIN;
+    my $answer = <STDIN>;
+    ReadMode 'restore', \*STDIN;
+    STDOUT->printflush("\n");
+    chomp $answer;
+    $answer;
+}
 
 use constant CHUNK_SIZE => 1024 * 1024;
 
@@ -272,7 +285,7 @@ sub parse_options {
     );
 
     if ($ask_sudo_password) {
-        my $password = prompt $SUDO_PROMPT, -echo => undef;
+        my $password = prompt $SUDO_PROMPT;
         $self->{sudo_password} = $password;
     }
     $self->{host} = $host_file ? $self->parse_host_file($host_file)
