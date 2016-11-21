@@ -27,9 +27,6 @@ my %WriteMakefileArgs = (
     "String::Glob::Permute" => 0,
     "Term::ReadKey" => 0
   },
-  "TEST_REQUIRES" => {
-    "Test::More" => "0.98"
-  },
   "VERSION" => "0.02",
   "test" => {
     "TESTS" => "t/*.t"
@@ -43,8 +40,7 @@ my %FallbackPrereqs = (
   "Net::OpenSSH" => 0,
   "Parallel::ForkManager" => "1.16",
   "String::Glob::Permute" => 0,
-  "Term::ReadKey" => 0,
-  "Test::More" => "0.98"
+  "Term::ReadKey" => 0
 );
 
 

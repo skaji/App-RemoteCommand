@@ -45,11 +45,6 @@
             "Term::ReadKey" : "0",
             "perl" : "5.008005"
          }
-      },
-      "test" : {
-         "requires" : {
-            "Test::More" : "0.98"
-         }
       }
    },
    "release_status" : "stable",
