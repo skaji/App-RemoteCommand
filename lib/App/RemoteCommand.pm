@@ -35,7 +35,7 @@ my $SUDO_PROMPT = sprintf "sudo password (asking with %s): ", basename($0);
 
 STDOUT->autoflush(1);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub new {
     my $class = shift;

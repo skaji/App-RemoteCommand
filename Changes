@@ -2,6 +2,10 @@ Revision history for Perl extension App-RemoteCommand
 
 {{$NEXT}}
 
+0.03  2016-11-21 23:00:40 JST
+
+    - remove IO::Prompt dependency
+
 0.02  2015-10-14 01:45:07 JST
 
     - simplify signal handling; only handle INT signal
