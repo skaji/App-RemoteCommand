@@ -250,7 +250,7 @@ sub parse_options {
     };
     GetOptions
         "c|concurrency=i"     => \($self->{concurrency} = 5),
-        "h|help"              => sub { pod2usage(0) },
+        "h|help"              => sub { pod2usage(verbose => 99, sections => 'SYNOPSIS|OPTIONS|EXAMPLES') },
         "u|user=s"            => sub { $deprecated->("user"); $self->{user} = $_[1] },
         "i|identity=s"        => sub { $deprecated->("identity"); $self->{identity} = $_[1] },
         "s|script=s"          => \($self->{script}),

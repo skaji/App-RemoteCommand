@@ -18,7 +18,8 @@ rcommand - simple remote command launcher
   > rcommand [OPTIONS] --host-file FILE COMMANDS
   > rcommand [OPTIONS] HOSTS --script SCRIPT [SCRIPT_ARGS]
 
-  OPTIONS:
+=head1 OPTIONS
+
   -s, --script=SCRIPT       execute local script file instead of COMMANDS argument
   -H, --host-file=FILE      set target hosts by host listed file
   -a, --ask-sudo-password   raise prompt for sudo password first
@@ -31,7 +32,8 @@ rcommand - simple remote command launcher
   -h, --help                show this help
   -v, --version             show version
 
-  EXAMPLES:
+=head1 EXAMPLES
+
   > rcommand example.jp 'uname -a'
   > rcommand example.jp --script foo.pl
   > rcommand example.jp --script script.pl arg1 arg2 arg3
