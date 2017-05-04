@@ -18,13 +18,19 @@ use Term::ReadKey 'ReadMode';
 
 sub prompt {
     my $msg = shift;
-    chomp $msg;
-    STDOUT->printflush($msg);
-    local $SIG{INT} = sub { ReadMode 'restore', \*STDIN; STDOUT->printflush("\n"); exit };
+    local $| = 1;
+    print $msg;
     ReadMode 'noecho', \*STDIN;
-    my $answer = <STDIN>;
+    my $SIGNAL = "catch signal INT\n";
+    my $answer;
+    eval {
+        local $SIG{INT} = sub { die $SIGNAL };
+        $answer = <STDIN>;
+    };
+    my $error = $@;
     ReadMode 'restore', \*STDIN;
-    STDOUT->printflush("\n");
+    print "\n";
+    die $error if $error;
     chomp $answer;
     $answer;
 }
