@@ -2,8 +2,8 @@
 use utf8;
 use warnings;
 use FindBin '$Bin';
-use lib "$Bin/..";
-use xt::Util;
+use lib "$Bin/lib";
+use Util;
 chdir $Bin;
 
 my $ssh_config = "$ENV{HOME}/.ssh/config";

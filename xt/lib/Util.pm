@@ -1,4 +1,4 @@
-package xt::Util;
+package Util;
 use strict;
 use warnings;
 use File::pushd 'pushd';
