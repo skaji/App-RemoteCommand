@@ -319,6 +319,12 @@ App::RemoteCommand - simple remote command launcher via ssh
 
 =head1 DESCRIPTION
 
+=begin html
+
+<a href="https://asciinema.org/a/119109?autoplay=1" target="_blank"><img src="https://asciinema.org/a/119109.png" alto="usage" style="max-width:100%;"/></a>
+
+=end html
+
 App::RemoteCommand is a simple remote command launcher via ssh. The features are:
 
 =over 4
