@@ -321,7 +321,7 @@ App::RemoteCommand - simple remote command launcher via ssh
 
 =begin html
 
-<a href="https://asciinema.org/a/119109?autoplay=1" target="_blank"><img src="https://asciinema.org/a/119109.png" alto="usage" style="max-width:100%;"/></a>
+<a href="https://asciinema.org/a/119109?autoplay=1" target="_blank"><img src="https://asciinema.org/a/119109.png" alto="usage" /></a>
 
 =end html
 
