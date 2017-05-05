@@ -60,7 +60,7 @@
          "web" : "https://github.com/skaji/App-RemoteCommand"
       }
    },
-   "version" : "0.03",
+   "version" : "0.04",
    "x_serialization_backend" : "Cpanel::JSON::XS version 3.0233",
    "x_static_install" : 1
 }
