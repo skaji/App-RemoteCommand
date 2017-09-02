@@ -47,7 +47,7 @@
          }
       }
    },
-   "release_status" : "stable",
+   "release_status" : "testing",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/skaji/App-RemoteCommand/issues"
@@ -59,7 +59,7 @@
          "web" : "https://github.com/skaji/App-RemoteCommand"
       }
    },
-   "version" : "0.04",
+   "version" : "0.90",
    "x_contributors" : [
       "Shoichi Kaji <skaji@outlook.com>"
    ],

@@ -2,6 +2,9 @@ Revision history for Perl extension App-RemoteCommand
 
 {{$NEXT}}
 
+0.90  2017-09-03 01:00:41 JST
+  - Full rewrite; use our own event-loop
+
 0.04  2017-05-05 13:04:47 JST
   - add screencast
   - switch to Module::Build::Tiny
