@@ -22,11 +22,11 @@ sub get {
     if ($drain) {
         if (length $self->{buffer}) {
             my @line = $self->get;
-            if (length $self->{buffer}) {
-                $self->{buffer} =~ s/\r?\n\z//;
+            if (length $self->{buffer} and $self->{buffer} ne "\x0d") {
+                $self->{buffer} =~ s/[\x0d\x0a]+\z//;
                 push @line, $self->{buffer};
-                $self->{buffer} = "";
             }
+            $self->{buffer} = "";
             return @line;
         } else {
             return;

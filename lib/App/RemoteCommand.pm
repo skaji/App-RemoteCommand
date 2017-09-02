@@ -289,7 +289,6 @@ sub parse_host_file {
     [ List::Util::uniq @host ];
 }
 
-
 1;
 __END__
 
