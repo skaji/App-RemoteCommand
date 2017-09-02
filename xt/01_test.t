@@ -13,7 +13,6 @@ subtest one => sub {
     subtest test => sub {
         my $r = rcommand("example999", "ls");
         ok $r->exit != 0;
-        like $r->stderr, qr/Internal error/;
         like $r->stderr, qr/FAIL/;
     };
     subtest test => sub {
