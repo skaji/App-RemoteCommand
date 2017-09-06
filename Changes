@@ -2,6 +2,9 @@ Revision history for Perl extension App-RemoteCommand
 
 {{$NEXT}}
 
+0.92  2017-09-07 03:41:18 JST
+  - Improve handling of "No route to host" and "Could not resolve hostname"
+
 0.91  2017-09-07 01:49:45 JST
   - Create Net::OpenSSH instances first, and wait them by wait_for_master()
 
