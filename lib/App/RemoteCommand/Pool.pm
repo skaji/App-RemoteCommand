@@ -46,6 +46,12 @@ sub remove {
     return;
 }
 
+sub remove_all {
+    my $self = shift;
+    $self->{pool} = [];
+    $self->{select} = IO::Select->new;
+}
+
 sub count {
     my $self = shift;
     scalar @{$self->{pool}};

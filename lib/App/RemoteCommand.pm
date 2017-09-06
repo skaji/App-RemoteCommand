@@ -30,7 +30,7 @@ sub new {
     bless {
         %option,
         pending => [],
-        relay => {},
+        relay => App::RemoteCommand::Pool->new,
         running => App::RemoteCommand::Pool->new,
     }, $class;
 }
@@ -50,8 +50,8 @@ sub run {
         }
         $self->one_tick;
         last if @{$self->{pending}} == 0
-             && scalar(keys %{$self->{relay}}) == 0
-             && $self->{running}->count == 0
+             && $self->{relay}->count == 0
+             && $self->{running}->count == 0;
     }
 
     my @success = sort grep { $self->{exit}{$_} == 0 } keys %{$self->{exit}};
@@ -126,23 +126,24 @@ sub handle_signal {
         }
     }
     @{$self->{pending}} = ();
-    %{$self->{relay}} = (); # this might block
+    $self->{relay}->remove_all; # this might block
 }
 
 sub one_tick {
     my $self = shift;
 
     DEBUG and logger "one tick";
-    DEBUG and logger "running %d, relay %d, pending %d", $self->{running}->count, scalar(keys %{$self->{relay}}), scalar @{$self->{pending}};
+    DEBUG and logger "running %d, relay %d, pending %d",
+        $self->{running}->count, $self->{relay}->count, scalar @{$self->{pending}};
 
-    while (scalar(keys %{$self->{relay}}) + $self->{running}->count < $self->{concurrency} and my $ssh = shift @{$self->{pending}}) {
+    while ($self->{relay}->count + $self->{running}->count < $self->{concurrency} and my $ssh = shift @{$self->{pending}}) {
         DEBUG and logger "start %s", $ssh->host;
         $ssh->start;
-        $self->{relay}{$ssh->host} = $ssh;
+        $self->{relay}->add($ssh);
     }
 
-    for my $host (grep { $self->{relay}{$_}->is_ready } keys %{$self->{relay}}) {
-        my $ssh = delete $self->{relay}{$host};
+    for my $ssh (grep { $_->is_ready } $self->{relay}->all) {
+        $self->{relay}->remove(host => $ssh->host);
         if ($ssh->next and !$ssh->error) {
              DEBUG and logger "next %s, pid %d", $ssh->host, $ssh->pid;
              $self->{running}->add($ssh);
@@ -202,6 +203,28 @@ sub one_tick {
     return if $pid == 0 || $pid == -1;
 
     my $ssh = $self->{running}->remove(pid => $pid);
+    if (!$ssh) {
+        my $ssh;
+        if ($ssh = $self->{relay}->remove(master_pid => $pid)) {
+            # login fails, cannot resolve hostname, ...
+            DEBUG and logger "wait %s, master pid %d", $ssh->host, $pid;
+            $ssh->master_exited;
+            my $err = $ssh->error || "master process exited unexpectedly";
+            print $self->{format}->($ssh->host, $err);
+            $self->{exit}{$ssh->host} = $exit == 0 ? 255 : $exit;
+            return;
+        } elsif ($ssh = $self->{running}->remove(master_pid => $pid)) {
+            # THIS IS UNEXPECTED
+            DEBUG and logger "wait %s, master pid %d", $ssh->host, $pid;
+            $ssh->master_exited;
+            my $err = $ssh->error || "master process exited unexpectedly";
+            print $self->{format}->($ssh->host, $err);
+            $self->{exit}{$ssh->host} = $exit == 0 ? 255 : $exit;
+            return;
+        } else {
+            die "Must not reach here";
+        }
+    }
     DEBUG and logger "wait %s, pid %d, exit %d", $ssh->host, $pid, $exit;
     if (my $fh = $ssh->fh) {
         my $rest = do { local $/; <$fh> };

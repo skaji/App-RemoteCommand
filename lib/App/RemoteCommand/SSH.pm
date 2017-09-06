@@ -14,9 +14,10 @@ sub _ssh {
         kill_ssh_on_timeout => 1,
         master_setpgrp => 1,
         master_opts => [
+            -o => "ConnectTimeout=5",
             -o => "StrictHostKeyChecking=no",
             -o => "UserKnownHostsFile=/dev/null",
-            -o => "LogLevel=quiet",
+            -o => "LogLevel=ERROR",
         ],
     );
 }
@@ -67,6 +68,16 @@ sub start {
 sub is_ready {
     my $self = shift;
     $self->{ssh}->wait_for_master(1);
+}
+
+sub master_pid {
+    my $self = shift;
+    $self->{ssh}->get_master_pid;
+}
+
+sub master_exited {
+    my $self = shift;
+    $self->{ssh}->master_exited;
 }
 
 sub next {
