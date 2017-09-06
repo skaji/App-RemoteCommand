@@ -59,6 +59,16 @@ sub delete_fh {
     delete $self->{fh};
 }
 
+sub start {
+    my $self = shift;
+    $self->{ssh} = $self->_ssh($self->{host});
+}
+
+sub is_ready {
+    my $self = shift;
+    $self->{ssh}->wait_for_master(1);
+}
+
 sub next {
     my $self = shift;
     my ($cmd, $type);
@@ -71,7 +81,7 @@ sub next {
     }
 
     if ($cmd) {
-        my $ssh = $self->{ssh} ||= $self->_ssh($self->{host});
+        my $ssh = $self->{ssh};
         my ($pid, $fh) = $cmd->($ssh);
         $self->{sudo} = undef;
         $self->{pid} = $pid;

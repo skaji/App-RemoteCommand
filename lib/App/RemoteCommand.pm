@@ -30,6 +30,7 @@ sub new {
     bless {
         %option,
         pending => [],
+        relay => {},
         running => App::RemoteCommand::Pool->new,
     }, $class;
 }
@@ -48,7 +49,9 @@ sub run {
             $INT = $TERM = 0;
         }
         $self->one_tick;
-        last if @{$self->{pending}} == 0 && $self->{running}->count == 0
+        last if @{$self->{pending}} == 0
+             && scalar(keys %{$self->{relay}}) == 0
+             && $self->{running}->count == 0
     }
 
     my @success = sort grep { $self->{exit}{$_} == 0 } keys %{$self->{exit}};
@@ -115,7 +118,6 @@ sub parse_options {
 sub handle_signal {
     my ($self, $name) = @_;
     DEBUG and logger "handling signal $name";
-    @{$self->{pending}} = ();
     for my $ssh ($self->{running}->all) {
         $ssh->cancel;
         if ($ssh->type eq "cmd") {
@@ -123,19 +125,27 @@ sub handle_signal {
             kill $name => $ssh->pid;
         }
     }
+    @{$self->{pending}} = ();
+    %{$self->{relay}} = (); # this might block
 }
 
 sub one_tick {
     my $self = shift;
 
     DEBUG and logger "one tick";
-    DEBUG and logger "running %d, pending %d", $self->{running}->count, scalar @{$self->{pending}};
+    DEBUG and logger "running %d, relay %d, pending %d", $self->{running}->count, scalar(keys %{$self->{relay}}), scalar @{$self->{pending}};
 
-    while ($self->{running}->count < $self->{concurrency} and my $ssh = shift @{$self->{pending}}) {
-        DEBUG and logger "try  %s", $ssh->host;
+    while (scalar(keys %{$self->{relay}}) + $self->{running}->count < $self->{concurrency} and my $ssh = shift @{$self->{pending}}) {
+        DEBUG and logger "start %s", $ssh->host;
+        $ssh->start;
+        $self->{relay}{$ssh->host} = $ssh;
+    }
+
+    for my $host (grep { $self->{relay}{$_}->is_ready } keys %{$self->{relay}}) {
+        my $ssh = delete $self->{relay}{$host};
         if ($ssh->next and !$ssh->error) {
-            DEBUG and logger "ssh  %s, pid %d", $ssh->host, $ssh->pid;
-            $self->{running}->add($ssh);
+             DEBUG and logger "next %s, pid %d", $ssh->host, $ssh->pid;
+             $self->{running}->add($ssh);
         } else {
             print $self->{format}->($ssh->host, $ssh->error || "FAILED");
             $self->{exit}{$ssh->host} = 255;
