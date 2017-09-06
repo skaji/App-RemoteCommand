@@ -2,6 +2,9 @@ Revision history for Perl extension App-RemoteCommand
 
 {{$NEXT}}
 
+0.91  2017-09-07 01:49:45 JST
+  - Create Net::OpenSSH instances first, and wait them by wait_for_master()
+
 0.90  2017-09-03 01:00:41 JST
   - Full rewrite; use our own event-loop
 
