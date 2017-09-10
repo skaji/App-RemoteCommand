@@ -18,7 +18,7 @@ use String::Glob::Permute 'string_glob_permute';
 
 use constant TICK_SECOND => 0.1;
 
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 
 my $SCRIPT = File::Basename::basename($0);
 my $SUDO_PROMPT = sprintf "sudo password (asking with %s): ", $SCRIPT;
