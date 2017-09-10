@@ -122,7 +122,7 @@ sub one_tick {
         undef $self->{ssh};
         $self->{exit} = $exit_code;
         $self->{_error} = "master process exited unexpectedly";
-        return;
+        $self->{state} = STATE_DONE;
     }
 
     if ($self->{state} == STATE_TODO) {
