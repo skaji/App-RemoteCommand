@@ -136,6 +136,9 @@ sub one_tick {
         select undef, undef, undef, TICK_SECOND;
     }
 
+    # We close fh explicitly; otherwise it happens that
+    # perl warns "unnable to close filehandle properly: Input/output error" under ssh proxy
+    SELECT:
     for my $ready ($self->{select}->can_read(TICK_SECOND)) {
         my ($fh, $pid, $host, $buffer) = @{$ready}{qw(fh pid host buffer)};
         my $len = sysread $fh, my $buf, 64*1024;
@@ -147,7 +150,7 @@ sub one_tick {
                 if ($ready->{sudo} and @line == 1 and $line[0] eq $SUDO_FAIL) {
                     $self->{select}->remove(fh => $fh);
                     close $fh;
-                    undef $fh;
+                    next SELECT;
                 }
             }
 
@@ -156,19 +159,23 @@ sub one_tick {
                 my ($line) = $buffer->get(1);
                 print $self->{format}->($host, $line);
                 if (my $sudo_password = $self->{sudo_password}) {
-                    syswrite $fh, "$sudo_password\n" if $fh;
+                    syswrite $fh, "$sudo_password\n";
                 } else {
                     my $err = "have to provide sudo passowrd first, try again with --ask-sudo-password option.";
                     print $self->{format}->($host, $err);
                     $self->{select}->remove(fh => $fh);
                     close $fh;
-                    undef $fh;
                 }
             }
         } elsif (!defined $len) {
             if ($errno != Errno::EIO) { # this happens when use ssh proxy, so skip
                 print $self->{format}->($host, "sysread $errmsg");
             }
+        } else {
+            my @line = $buffer->get(1);
+            print $self->{format}->($host, $_) for @line;
+            $self->{select}->remove(fh => $fh);
+            close $fh;
         }
     }
 
@@ -178,23 +185,20 @@ sub one_tick {
     if (my $remove = $self->{select}->remove(pid => $pid)) {
         my ($fh, $pid, $host, $buffer) = @{$remove}{qw(fh pid host buffer)};
         if ($fh) {
-            # We should use select(2) here
-            # It happens that <$fh> is blocked under SSH proxy environment
+            # We use select() here; otherwise it happens that
+            # <$fh> is blocked under ssh proxy
             my $select = IO::Select->new($fh);
-            my $rest = "";
-            while (1) {
-                $select->can_read(TICK_SECOND) or last;
+            while ($select->can_read(TICK_SECOND)) {
                 my $len = sysread $fh, my $buf, 64*1024;
                 if (defined $len && $len > 0) {
-                    $rest .= $buf;
+                    $buffer->add($buf);
                 } else {
                     last;
                 }
             }
-            $buffer->add($rest) if length $rest;
-            if (my @line = $buffer->get(1)) {
-                print $self->{format}->($host, $_) for @line;
-            }
+            my @line = $buffer->get(1);
+            print $self->{format}->($host, $_) for @line;
+            close $fh;
         }
     }
 

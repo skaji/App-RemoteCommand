@@ -43,17 +43,6 @@ sub new {
     }, $class;
 }
 
-sub DESTROY {
-    my $self = shift;
-    # we should close fh explicitly
-    # otherwise it happens that
-    # perl warns "unnable to close filehandle properly: Input/output error"
-    # under SSH proxy
-    if ($self->{current} and my $fh = $self->{current}{fh}) {
-        close $fh;
-    }
-}
-
 sub add {
     my ($self, $cmd) = @_;
     push @{$self->{cmd}}, $cmd;
