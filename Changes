@@ -2,6 +2,9 @@ Revision history for Perl extension App-RemoteCommand
 
 {{$NEXT}}
 
+0.94  2017-09-11 21:25:18 JST
+  - Close pipes more properly
+
 0.93  2017-09-10 17:47:30 JST
   - Improve internal event-loop
 
