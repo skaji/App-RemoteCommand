@@ -2,6 +2,9 @@ Revision history for Perl extension App-RemoteCommand
 
 {{$NEXT}}
 
+0.95  2017-09-13 22:47:21 JST
+  - Fix file permission
+
 0.94  2017-09-11 21:25:18 JST
   - Close pipes more properly
 
