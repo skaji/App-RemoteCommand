@@ -8,6 +8,7 @@ use App::RemoteCommand::Select;
 use App::RemoteCommand::Util qw(prompt DEBUG logger);
 
 use File::Basename ();
+use File::Copy ();
 use File::Temp ();
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use IO::Select;
@@ -92,10 +93,9 @@ sub parse_options {
         exit(2);
     }
     if ($self->{script}) {
-        open my $fh, "<", $self->{script} or die "$self->{script}: $!\n";
-        my $content = do { local $/; <$fh> };
         my ($tempfh, $tempfile) = File::Temp::tempfile(UNLINK => 1, EXLOCK => 0);
-        print {$tempfh} $content;
+        File::Copy::copy($self->{script}, $tempfh)
+            or die "copy $self->{script} to tempfile: $!";
         close $tempfh;
         chmod 0755, $tempfile;
         $self->{script} = $tempfile;
