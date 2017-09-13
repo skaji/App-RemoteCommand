@@ -97,7 +97,7 @@ sub parse_options {
         my ($tempfh, $tempfile) = File::Temp::tempfile(UNLINK => 1, EXLOCK => 0);
         print {$tempfh} $content;
         close $tempfh;
-        chmod 0700, $tempfile;
+        chmod 0755, $tempfile;
         $self->{script} = $tempfile;
     }
 
