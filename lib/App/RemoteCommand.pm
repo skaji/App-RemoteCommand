@@ -41,6 +41,7 @@ sub run {
     $self->parse_options(@argv);
     $self->register;
 
+    local $| = 1;
     my $INT; local $SIG{INT} = sub { $INT++ };
     my $TERM; local $SIG{TERM} = sub { $TERM++ };
     while (1) {
