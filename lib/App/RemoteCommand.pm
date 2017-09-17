@@ -233,9 +233,11 @@ sub register {
         };
         @command = (@prefix, $name, @{$self->{script_arg}});
     } else {
-        @command = @{$self->{command}};
-        unshift @command, "bash", "-c" if @command == 1;
-        unshift @command, @prefix;
+        @command = (
+            @prefix,
+            (@{$self->{command}} == 1 && $self->{command}[0] =~ /\s/ ? ("bash", "-c") : ()),
+            @{$self->{command}},
+        );
     }
     DEBUG and logger "execute %s", join(" ", map { qq('$_') } @command);
     push @ssh_cmd, sub {
