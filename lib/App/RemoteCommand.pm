@@ -234,9 +234,10 @@ sub register {
         };
         @command = (@prefix, $name, @{$self->{script_arg}});
     } else {
+        my $escape = qr{[^a-zA-Z0-9/_:%\.-]};
         @command = (
             @prefix,
-            (@{$self->{command}} == 1 && $self->{command}[0] =~ /\s/ ? ("bash", "-c") : ()),
+            (@{$self->{command}} == 1 && $self->{command}[0] =~ $escape ? ("bash", "-c") : ()),
             @{$self->{command}},
         );
     }
