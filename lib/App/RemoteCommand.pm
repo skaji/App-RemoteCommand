@@ -127,88 +127,102 @@ sub cancel {
 sub one_tick {
     my $self = shift;
 
-    DEBUG and logger "one tick running %d, pending %d", $self->{running}->count, scalar @{$self->{pending}};
-
     while ($self->{running}->count < $self->{concurrency} and my $ssh = shift @{$self->{pending}}) {
         $self->{running}->add($ssh);
     }
 
+    my @ready = $self->{select}->can_read(TICK_SECOND);
+    DEBUG and logger "one tick running %d (watching %d, can_read %d), pending %d",
+        $self->{running}->count, $self->{select}->count, scalar @ready, scalar @{$self->{pending}};
+
     if ($self->{select}->count == 0) {
         select undef, undef, undef, TICK_SECOND;
+    } else {
+        $self->_process($_) for @ready;
     }
 
-    # We close fh explicitly; otherwise it happens that
-    # perl warns "unnable to close filehandle properly: Input/output error" under ssh proxy
-    SELECT:
-    for my $ready ($self->{select}->can_read(TICK_SECOND)) {
-        my ($fh, $pid, $host, $buffer) = @{$ready}{qw(fh pid host buffer)};
-        my $len = sysread $fh, my $buf, 64*1024;
-        my ($errno, $errmsg) = (0+$!, "$!");
-        DEBUG and logger "READ %s, pid %d, len %s", $host, $pid, defined $len ? $len : 'undef';
-        if ($len) {
-            if (my @line = $buffer->add($buf)->get) {
-                print $self->{format}->($host, $_) for @line;
-                if ($ready->{sudo} and @line == 1 and $line[0] eq $SUDO_FAIL) {
-                    $self->{select}->remove(fh => $fh);
-                    close $fh;
-                    next SELECT;
-                }
-            }
-
-            if ($buffer->raw eq $SUDO_PROMPT) {
-                $ready->{sudo}++;
-                my ($line) = $buffer->get(1);
-                print $self->{format}->($host, $line);
-                if (my $sudo_password = $self->{sudo_password}) {
-                    syswrite $fh, "$sudo_password\n";
-                } else {
-                    my $err = "have to provide sudo passowrd first, try again with --ask-sudo-password option.";
-                    print $self->{format}->($host, $err);
-                    $self->{select}->remove(fh => $fh);
-                    close $fh;
-                }
-            }
-        } elsif (!defined $len) {
-            if ($errno != Errno::EIO) { # this happens when use ssh proxy, so skip
-                print $self->{format}->($host, "sysread $errmsg");
-            }
-        } else {
-            my @line = $buffer->get(1);
-            print $self->{format}->($host, $_) for @line;
-            $self->{select}->remove(fh => $fh);
-            close $fh;
-        }
-    }
-
+    # -1: there is no child process
+    #  0: all child process are running
     my $pid = waitpid -1, POSIX::WNOHANG;
     my $exit = $?;
 
-    if (my $remove = $self->{select}->remove(pid => $pid)) {
-        my ($fh, $pid, $host, $buffer) = @{$remove}{qw(fh pid host buffer)};
-        if ($fh) {
-            # We use select() here; otherwise it happens that
-            # <$fh> is blocked under ssh proxy
-            my $select = IO::Select->new($fh);
-            while ($select->can_read(TICK_SECOND)) {
-                my $len = sysread $fh, my $buf, 64*1024;
-                if (defined $len && $len > 0) {
-                    $buffer->add($buf);
-                } else {
-                    last;
-                }
-            }
-            my @line = $buffer->get(1);
-            print $self->{format}->($host, $_) for @line;
-            close $fh;
-        }
+    if ($pid > 0 and my $remove = $self->{select}->remove(pid => $pid)) {
+        $self->_post_process($remove);
     }
 
     for my $ssh ($self->{running}->all) {
-        my $is_running = $ssh->one_tick(pid => $pid, exit => $exit, select => $self->{select});
+        my %args = (select => $self->{select}, $pid > 0 ? (pid => $pid, exit => $exit) : ());
+        my $is_running = $ssh->one_tick(%args);
         if (!$is_running) {
             $self->{exit}{$ssh->host} = $ssh->exit;
             $self->{running}->remove($ssh);
         }
+    }
+}
+
+# We close fh explicitly; otherwise it happens that
+# perl warns "unnable to close filehandle properly: Input/output error" under ssh proxy
+sub _process {
+    my ($self, $ready) = @_;
+    my ($fh, $pid, $host, $buffer) = @{$ready}{qw(fh pid host buffer)};
+    my $len = sysread $fh, my $buf, 64*1024;
+    my ($errno, $errmsg) = (0+$!, "$!");
+    DEBUG and logger " READ %s, pid %d, len %s, err: %s",
+        $host, $pid, defined $len ? $len : 'undef', $errmsg || "N/A";
+    if ($len) {
+        if (my @line = $buffer->add($buf)->get) {
+            print $self->{format}->($host, $_) for @line;
+            if ($ready->{sudo} and @line == 1 and $line[0] eq $SUDO_FAIL) {
+                $self->{select}->remove(fh => $fh);
+                close $fh;
+                return;
+            }
+        }
+
+        if ($buffer->raw eq $SUDO_PROMPT) {
+            $ready->{sudo}++;
+            my ($line) = $buffer->get(1);
+            print $self->{format}->($host, $line);
+            if (my $sudo_password = $self->{sudo_password}) {
+                syswrite $fh, "$sudo_password\n";
+            } else {
+                my $err = "have to provide sudo passowrd first, try again with --ask-sudo-password option.";
+                print $self->{format}->($host, $err);
+                $self->{select}->remove(fh => $fh);
+                close $fh;
+            }
+        }
+    } elsif (!defined $len) {
+        if ($errno != Errno::EIO) { # this happens when use ssh proxy, so skip
+            print $self->{format}->($host, "sysread $errmsg");
+        }
+    } else {
+        my @line = $buffer->get(1);
+        print $self->{format}->($host, $_) for @line;
+        $self->{select}->remove(fh => $fh);
+        close $fh;
+    }
+}
+
+sub _post_process {
+    my ($self, $ready) = @_;
+    my ($fh, $pid, $host, $buffer) = @{$ready}{qw(fh pid host buffer)};
+    if ($fh) {
+        # XXX: We use select() here; otherwise it happens that
+        # <$fh> is blocked under ssh proxy
+        my $select = IO::Select->new($fh);
+        while ($select->can_read(TICK_SECOND)) {
+            my $len = sysread $fh, my $buf, 64*1024;
+            DEBUG and logger " POST READ %s, pid %d, len %s", $host, $pid, defined $len ? $len : 'undef';
+            if (defined $len && $len > 0) {
+                $buffer->add($buf);
+            } else {
+                last;
+            }
+        }
+        my @line = $buffer->get(1);
+        print $self->{format}->($host, $_) for @line;
+        close $fh;
     }
 }
 

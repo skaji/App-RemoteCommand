@@ -2,7 +2,12 @@ $key = <<KEY
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6m3sDBs55bGiyb35idIRx7NWGVl0P9zh9SZniclZFeYRqtlknpOBQ3H6jUeOORSCqrOYqmg2/e/2FDFr2BfhSnYnI45BqBKEgxs8YMkrqKLv6x9ntA9foiW01NZV+8dNsarSSxyGAX/+huLfITe48fPvZHp4QxpcvC6Xtmx6MQJoUZNWIoPLjslOJzHbKj8V85kkE3kXfYs5Grz7K3nbXM7jFy+2A461VL6ARYscHmSR5Xmj+6Yvc6w2UWmGv7+ilyrtwDYPs5Sh56T1zKCr9tNEIGZYJW/tIOgUthgt2rrfpt2Yk5B6LSeTcj1tilQ+1BZ8IXZic16SNuzYVLYZV skaji@MBP2013.local
 KEY
 
+hostname = File.basename(File.expand_path(File.dirname(__FILE__)))
+
 $script = <<SCRIPT
+echo '#{hostname}' > /etc/hostname
+perl -i -nle 'if (/^127.0.0.1/) { print "127.0.0.1 #{hostname} localhost" } else { print }' /etc/hosts
+hostname #{hostname}
 useradd -m --shell /bin/bash skaji
 echo 'skaji:skaji' | chpasswd
 echo 'skaji ALL=(ALL) ALL' > /etc/sudoers.d/skaji
