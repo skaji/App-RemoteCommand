@@ -11,7 +11,7 @@ sub _ssh {
     Net::OpenSSH->new($host,
         async => 1,
         strict_mode => 0,
-        timeout => 5,
+        timeout => 6,
         kill_ssh_on_timeout => 1,
         master_setpgrp => 1,
         master_opts => [
