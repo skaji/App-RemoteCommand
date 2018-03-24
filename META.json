@@ -47,6 +47,27 @@
          }
       }
    },
+   "provides" : {
+      "App::RemoteCommand" : {
+         "file" : "lib/App/RemoteCommand.pm",
+         "version" : "0.98"
+      },
+      "App::RemoteCommand::LineBuffer" : {
+         "file" : "lib/App/RemoteCommand/LineBuffer.pm"
+      },
+      "App::RemoteCommand::Pool" : {
+         "file" : "lib/App/RemoteCommand/Pool.pm"
+      },
+      "App::RemoteCommand::SSH" : {
+         "file" : "lib/App/RemoteCommand/SSH.pm"
+      },
+      "App::RemoteCommand::Select" : {
+         "file" : "lib/App/RemoteCommand/Select.pm"
+      },
+      "App::RemoteCommand::Util" : {
+         "file" : "lib/App/RemoteCommand/Util.pm"
+      }
+   },
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
