@@ -2,6 +2,9 @@ Revision history for Perl extension App-RemoteCommand
 
 {{$NEXT}}
 
+0.981  2018-03-24 23:22:35 JST
+  - When canceling, send signal to process group of master connection
+
 0.98  2018-03-24 08:58:35 JST
   - Set timeout => 6 together with ConnectTimeout=5;
     This prevents from leaving proxy ssh processes.
