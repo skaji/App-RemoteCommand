@@ -112,7 +112,7 @@ sub one_tick {
     if ($ssh and $exit_pid and $ssh->get_master_pid and $exit_pid == $ssh->get_master_pid) {
         DEBUG and logger " FAIL %s, master process exited unexpectedly", $self->host;
         $ssh->master_exited;
-        $self->{exit} = $exit_code;
+        $self->{exit} = $exit_code || -1;
         $self->{_error} = $self->{ssh}->error || "master process exited unexpectedly";
         $self->{state} = STATE_DONE;
         undef $self->{ssh};
