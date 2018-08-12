@@ -1,0 +1,14 @@
+version: '2'
+services:
+  sshd1:
+    image: skaji-sshd
+    ports:
+      - "3021:22"
+  sshd2:
+    image: skaji-sshd
+    ports:
+      - "3022:22"
+  sshd3:
+    image: skaji-sshd
+    ports:
+      - "3023:22"

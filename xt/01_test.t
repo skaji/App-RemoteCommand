@@ -5,9 +5,24 @@ use Test::More;
 use lib "xt/lib";
 use Util;
 
-unless ( -d ".git" && system("ssh example001 w &>/dev/null") == 0 ) {
-    plan skip_all => "Please setup virtual machines first";
+system "docker image inspect skaji-sshd >/dev/null 2>&1";
+if ($? != 0) {
+    plan skip_all => 'Must prepare skaji-sshd container first';
 }
+chmod 0600, $_ for glob "xt/key/*";
+
+my $pid = fork // die;
+if ($pid == 0) {
+    chdir "xt";
+    exec "docker-compose", "up";
+    exit 255;
+}
+sleep 3;
+my $guard = guard {
+    kill TERM => $pid;
+    waitpid $pid, 0;
+    diag "docker-compose exit $?";
+};
 
 subtest one => sub {
     subtest test => sub {

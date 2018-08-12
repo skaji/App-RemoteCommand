@@ -1,0 +1,32 @@
+Host example001
+  HostName 127.0.0.1
+  User skaji
+  Port 3021
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile xt/key/insecure_id_rsa
+  IdentitiesOnly yes
+  LogLevel FATAL
+
+Host example002
+  HostName 127.0.0.1
+  User skaji
+  Port 3022
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile xt/key/insecure_id_rsa
+  IdentitiesOnly yes
+  LogLevel FATAL
+
+Host example003
+  HostName 127.0.0.1
+  User skaji
+  Port 3023
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile xt/key/insecure_id_rsa
+  IdentitiesOnly yes
+  LogLevel FATAL
