@@ -11,7 +11,8 @@ if ($? != 0) {
 }
 chmod 0600, $_ for glob "xt/key/*";
 
-my $pid = fork // die;
+my $pid = fork;
+die unless defined $pid;
 if ($pid == 0) {
     chdir "xt";
     exec "docker-compose", "up";
