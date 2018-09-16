@@ -6,9 +6,11 @@ App::RemoteCommand - simple remote command launcher via ssh
 
 # SYNOPSIS
 
-    > rcommand [OPTIONS] HOSTS COMMANDS
-    > rcommand [OPTIONS] --script SCRIPT HOSTS
-    > rcommand [OPTIONS] --host-file FILE COMMANDS
+    $ rcommand [OPTIONS] HOSTS COMMANDS
+    $ rcommand [OPTIONS] --script SCRIPT HOSTS
+    $ rcommand [OPTIONS] --host-file FILE COMMANDS
+
+See [rcommad](https://metacpan.org/pod/distribution/App-RemoteCommand/script/rcommand).
 
 # DESCRIPTION
 
