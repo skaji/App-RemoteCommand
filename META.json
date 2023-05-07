@@ -27,13 +27,13 @@
       },
       "runtime" : {
          "requires" : {
+            "Getopt::Long" : "2.39",
             "IO::Pty" : "0",
             "List::Util" : "1.45",
             "Net::OpenSSH" : "0",
-            "Pod::Usage" : "1.33",
             "String::Glob::Permute" : "0",
             "Term::ReadKey" : "0",
-            "perl" : "5.008004"
+            "perl" : "v5.16.0"
          }
       }
    },

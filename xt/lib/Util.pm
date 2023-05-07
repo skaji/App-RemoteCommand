@@ -1,6 +1,7 @@
 package Util;
-use strict;
+use v5.16;
 use warnings;
+
 use File::pushd 'pushd';
 use Capture::Tiny qw(capture);
 use File::Temp ();
@@ -11,14 +12,14 @@ sub run { !system @_ or die "FAIL @_" }
 sub slurp { my $file = shift; open my $fh, "<", $file or die $!; <$fh> }
 sub spew { my ($file, $str) = @_; open my $fh, ">", $file or die $!; print {$fh} $str }
 
-{
-    package Result;
+package Result {
     sub new { bless $_[1], $_[0] }
     no strict 'refs';
     for my $attr (qw(stdout stderr exit)) {
         *$attr = sub { shift->{$attr} };
     }
 }
+
 sub rcommand {
     my @command = @_;
     my $script = "script/rcommand";
@@ -36,8 +37,7 @@ sub tempfile {
     $name;
 }
 
-{
-    package Guard;
+package Guard {
     sub new {
         my ($class, $sub) = @_;
         bless { owner => $$, sub => $sub }, $class;

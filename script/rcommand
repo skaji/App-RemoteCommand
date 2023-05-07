@@ -1,6 +1,7 @@
 #!perl
-use strict;
+use v5.16;
 use warnings;
+
 use App::RemoteCommand;
 
 exit App::RemoteCommand->run(@ARGV);

@@ -1,13 +1,13 @@
 prereqs:
   runtime:
     requires:
+      Getopt::Long: { version: '2.39' }
       IO::Pty:
       List::Util: { version: '1.45' }
       Net::OpenSSH:
-      Pod::Usage: { version: '1.33' }
       String::Glob::Permute:
       Term::ReadKey:
-      perl: { version: '5.008004' }
+      perl: { version: 'v5.16' }
   develop:
     requires:
       Capture::Tiny:
