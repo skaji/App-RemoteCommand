@@ -1,0 +1,14 @@
+prereqs:
+  runtime:
+    requires:
+      IO::Pty:
+      List::Util: { version: '1.45' }
+      Net::OpenSSH:
+      Pod::Usage: { version: '1.33' }
+      String::Glob::Permute:
+      Term::ReadKey:
+      perl: { version: '5.008004' }
+  develop:
+    requires:
+      Capture::Tiny:
+      File::pushd:

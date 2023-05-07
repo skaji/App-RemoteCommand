@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/skaji/App-RemoteCommand.svg?branch=master)](https://travis-ci.org/skaji/App-RemoteCommand)
+[![Actions Status](https://github.com/skaji/App-RemoteCommand/actions/workflows/test.yml/badge.svg)](https://github.com/skaji/App-RemoteCommand/actions)
 
 # NAME
 
