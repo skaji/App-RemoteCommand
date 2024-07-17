@@ -19,12 +19,6 @@
             "Dist::Build" : "0.006"
          }
       },
-      "develop" : {
-         "requires" : {
-            "Capture::Tiny" : "0",
-            "File::pushd" : "0"
-         }
-      },
       "runtime" : {
          "requires" : {
             "Getopt::Long" : "2.39",
