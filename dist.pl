@@ -15,6 +15,7 @@ my @config = (
         'PruneFiles' => [ filename => 'dist.pl', filename => 'cpm.yml', filename => 'README.md', match => '^(xt|author|maint|example|eg)/' ],
         'GitHubREADME::Badge' => [ badges => 'github_actions/test.yml' ],
         'Prereqs::From::cpmfile' => [],
+        'GenerateFile' => [ filename => 'Build.PL', content => "use Dist::Build;\n" . 'Build_PL(\@ARGV, \%ENV);' ],
         'MetaJSON' => [],
         'Metadata' => [ x_static_install => 1 ],
         'Git::Contributors' => [],
