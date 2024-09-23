@@ -16,7 +16,8 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "Dist::Build" : "0.015"
+            "Dist::Build" : "0.015",
+            "perl" : "v5.16.0"
          }
       },
       "runtime" : {

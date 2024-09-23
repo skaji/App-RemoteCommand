@@ -2,6 +2,7 @@ prereqs:
   configure:
     requires:
       Dist::Build: { version: '0.015' }
+      perl: { version: 'v5.16' }
   runtime:
     requires:
       Getopt::Long: { version: '2.39' }
