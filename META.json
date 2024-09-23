@@ -16,7 +16,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "Dist::Build" : "0.006"
+            "Dist::Build" : "0.015"
          }
       },
       "runtime" : {

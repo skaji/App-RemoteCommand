@@ -1,4 +1,7 @@
 prereqs:
+  configure:
+    requires:
+      Dist::Build: { version: '0.015' }
   runtime:
     requires:
       Getopt::Long: { version: '2.39' }
