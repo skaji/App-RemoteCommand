@@ -16,7 +16,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "Dist::Build" : "0.015",
+            "Module::Build::Tiny" : "0.051",
             "perl" : "v5.16.0"
          }
       },
