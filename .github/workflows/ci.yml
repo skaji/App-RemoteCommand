@@ -1,0 +1,77 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+  pull_request:
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        perl-version:
+          - '5.24.4'
+          - 'latest'
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup perl
+        run: |
+          curl -fsSL https://github.com/skaji/cpm-test/releases/download/0.01/ubuntu-24.04-perl-${{ matrix.perl-version }}.tar.xz | tar xJf - -C /tmp
+          echo /tmp/perl-${{ matrix.perl-version }}/bin >> $GITHUB_PATH
+      - run: perl -V
+      - name: Install Dependencies
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g App::cpanminus
+          curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
+      - run: prove -lr t xt
+  test-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: /usr/bin/perl -V
+      - name: Install Dependencies
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | sudo -H /usr/bin/perl - install -g App::cpanminus
+          curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | sudo -H /usr/bin/perl - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
+      - run: /usr/bin/prove -lr t xt
+
+  release:
+    needs:
+      - test-linux
+      - test-macos
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # actions/attest
+      attestations: write # actions/attest
+      artifact-metadata: write # actions/attest
+      contents: write # gh release
+    steps:
+      - uses: actions/checkout@v6
+      - name: Prepare variables
+        id: var
+        run: echo dist=$(jq -r '"\(.name)-\(.version)\(if .release_status == "stable" then "" else "-TRIAL" end)"' META.json) >> $GITHUB_OUTPUT
+      - name: Generate tarball
+        run: |
+          git archive --format=tar \
+            --prefix=${{ steps.var.outputs.dist }}/ \
+            'HEAD^{tree}' | gzip -n -9 > ${{ steps.var.outputs.dist }}.tar.gz
+      - uses: actions/attest@v4
+        id: attest
+        with:
+          subject-path: ${{ steps.var.outputs.dist }}.tar.gz
+      - name: Create release
+        run: |
+          gh release create --repo ${{ github.repository }} ${{ github.ref_name }} \
+            --notes "Artifact attestation: ${{ steps.attest.outputs.attestation-url }}" \
+            ${{ steps.var.outputs.dist }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: skaji/action-pause-upload@v1
+        with:
+          files: ${{ steps.var.outputs.dist }}.tar.gz
+          pause-token: ${{ secrets.PAUSE_TOKEN }}
