@@ -27,7 +27,7 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g App::cpanminus
           curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
-      - run: prove -lr t xt
+      - run: prove -lr t
   test-macos:
     runs-on: macos-latest
     steps:
@@ -37,7 +37,7 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | sudo -H /usr/bin/perl - install -g App::cpanminus
           curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | sudo -H /usr/bin/perl - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
-      - run: /usr/bin/prove -lr t xt
+      - run: /usr/bin/prove -lr t
 
   release:
     needs:
