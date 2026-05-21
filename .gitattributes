@@ -1,0 +1,10 @@
+.gitattributes export-ignore
+.gitignore export-ignore
+.github/ export-ignore
+README.md export-ignore
+author/ export-ignore
+dist.pl export-ignore
+eg/ export-ignore
+example/ export-ignore
+maint/ export-ignore
+xt/ export-ignore
