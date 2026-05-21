@@ -1,5 +1,3 @@
-[![Actions Status](https://github.com/skaji/App-RemoteCommand/actions/workflows/test.yml/badge.svg)](https://github.com/skaji/App-RemoteCommand/actions)
-
 # NAME
 
 App::RemoteCommand - simple remote command launcher via ssh
@@ -33,12 +31,15 @@ without password or passphrase.
 So if your ssh identity (ssh private key) requires a passphrase,
 please use `ssh-agent`.
 
-# LICENSE
+# ARTIFACT ATTESTATIONS
+
+GitHub Artifact Attestations are generated for release tarballs uploaded to
+CPAN. If you care about provenance for the uploaded tarballs, see:
+
+[https://github.com/skaji/App-RemoteCommand/attestations](https://github.com/skaji/App-RemoteCommand/attestations)
+
+# COPYRIGHT AND LICENSE
 
 Copyright 2016 Shoichi Kaji <skaji@cpan.org>
 
 This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
-
-# AUTHOR
-
-Shoichi Kaji

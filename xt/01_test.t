@@ -1,5 +1,6 @@
-use v5.16;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use Test::More;
 use lib "xt/lib";
@@ -25,18 +26,18 @@ my $guard = guard {
     diag "docker-compose exit $?";
 };
 
-subtest one => sub {
-    subtest test => sub {
+subtest one => sub (@) {
+    subtest test => sub (@) {
         my $r = rcommand("example999", "ls");
         ok $r->exit != 0;
         like $r->stderr, qr/FAIL/;
     };
-    subtest test => sub {
+    subtest test => sub (@) {
         my $r = rcommand("example001", "false");
         ok $r->exit != 0;
         like $r->stderr, qr/FAIL/;
     };
-    subtest test => sub {
+    subtest test => sub (@) {
         my $r = rcommand("example001", "uname");
         is $r->exit, 0;
         like $r->stderr, qr/SUCCESS/;
@@ -44,27 +45,27 @@ subtest one => sub {
     };
 
     my $time = qr/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/;
-    subtest test => sub {
+    subtest test => sub (@) {
         my $r = rcommand("--no-append-hostname", "example001", "uname");
         is $r->stdout, "Linux\n";
     };
-    subtest test => sub {
+    subtest test => sub (@) {
         my $r = rcommand("--no-append-hostname", "--append-time", "example001", "uname");
         like $r->stdout, qr/^\[$time\] Linux\n$/;
     };
-    subtest test => sub {
+    subtest test => sub (@) {
         my $r = rcommand("--append-time", "example001", "uname");
         like $r->stdout, qr/\[$time\]\[example001\] Linux\n$/;
     };
 
-    subtest test => sub {
+    subtest test => sub (@) {
         my $r = rcommand("--sudo-password", "skaji", "example001", "sudo uname");
         is $r->exit, 0;
         like $r->stderr, qr/SUCCESS/;
         like $r->stdout, qr/\[example001\] Linux/;
     };
 
-    subtest test => sub {
+    subtest test => sub (@) {
         my $script = tempfile("#!/bin/bash\nuname\n");
         my $r = rcommand("--script", $script, "example001");
         is $r->exit, 0;
@@ -72,7 +73,7 @@ subtest one => sub {
         is $r->stdout, "[example001] Linux\n";
     };
 
-    subtest test => sub {
+    subtest test => sub (@) {
         my $script = tempfile("#!/bin/bash\nsudo uname\n");
         my $r = rcommand("--script", $script, "--sudo-password", "skaji", "example001");
         is $r->exit, 0;
@@ -80,7 +81,7 @@ subtest one => sub {
         like $r->stdout, qr/\[example001\] Linux\n/;
     };
 
-    subtest test => sub {
+    subtest test => sub (@) {
         my $host_file = tempfile("\n\n  \n# comment\nexample001");
         my $r = rcommand("--host-file", $host_file, "uname");
         is $r->exit, 0;
@@ -89,21 +90,21 @@ subtest one => sub {
     };
 };
 
-subtest three => sub {
-    subtest test => sub {
+subtest three => sub (@) {
+    subtest test => sub (@) {
         my $r = rcommand("example00[1-3]", "false");
         ok $r->exit != 0;
         like $r->stderr, qr/FAIL.*FAIL.*FAIL/sm;
     };
 
-    subtest test => sub {
+    subtest test => sub (@) {
         my $r = rcommand("example00[1-3]", "uname");
         is $r->exit, 0;
         like $r->stderr, qr/SUCCESS.*SUCCESS.*SUCCESS/sm;
         like $r->stdout, qr/\[example00$_\] Linux\n/ for 1..3;
     };
 
-    subtest test => sub {
+    subtest test => sub (@) {
         rcommand("example003", "echo foo > foo");
         my $r = rcommand("example00[1-3]", "ls foo");
         ok $r->exit != 0;
@@ -113,14 +114,14 @@ subtest three => sub {
         like $r->stderr, qr/SUCCESS$end example003/;
     };
 
-    subtest test => sub {
+    subtest test => sub (@) {
         my $r = rcommand("--sudo-password", "skaji", "example[001-003]", "sudo uname");
         is $r->exit, 0;
         like $r->stderr, qr/SUCCESS.*SUCCESS.*SUCCESS/sm;
         like $r->stdout, qr/\[example00$_\] Linux\n/ for 1..3;
     };
 
-    subtest test => sub {
+    subtest test => sub (@) {
         my $script = tempfile("#!/bin/bash\nuname\n");
         my $r = rcommand("--script", $script, "example001,example002,example003");
         is $r->exit, 0;
@@ -128,7 +129,7 @@ subtest three => sub {
         like $r->stdout, qr/\[example00$_\] Linux\n/ for 1..3;
     };
 
-    subtest test => sub {
+    subtest test => sub (@) {
         my $script = tempfile("#!/bin/bash\nsudo uname\n");
         my $r = rcommand("--script", $script, "--sudo-password", "skaji", "example00[1-3]");
         is $r->exit, 0;
@@ -136,7 +137,7 @@ subtest three => sub {
         like $r->stdout, qr/\[example00$_\] Linux\n/ for 1..3;
     };
 
-    subtest test => sub {
+    subtest test => sub (@) {
         my $host_file = tempfile("example001\nexample002\nexample003\n\n");
         my $r = rcommand("-H", $host_file, "uname");
         is $r->exit, 0;
