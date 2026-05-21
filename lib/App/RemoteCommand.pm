@@ -361,14 +361,10 @@ CPAN. If you care about provenance for the uploaded tarballs, see:
 
 L<https://github.com/skaji/App-RemoteCommand/attestations>
 
-=head1 LICENSE
+=head1 COPYRIGHT AND LICENSE
 
 Copyright 2016 Shoichi Kaji <skaji@cpan.org>
 
 This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
-
-=head1 AUTHOR
-
-Shoichi Kaji
 
 =cut
