@@ -1,6 +1,6 @@
 Revision history for Perl extension App-RemoteCommand
 
-{{$NEXT}}
+v1.0.0  2026-05-23
   - Raise minimum Perl to v5.24
 
 0.994  2025-05-02 10:07:04 JST
