@@ -56,10 +56,10 @@ my @prereq = (
 my @plugin = (
     'ExecDir' => [ dir => 'script' ],
     'Git::GatherDir' => [ exclude_filename => 'META.json' ],
-    'CopyFilesFromBuild' => [ copy => 'META.json', copy => 'Changes' ],
+    'CopyFilesFromBuild' => [ copy => 'META.json' ],
     '=VersionFromMainModule' => [],
     'ReversionOnRelease' => [],
-    '=NextRelease' => [ format => '%v  %{yyyy-MM-dd}d%{ (TRIAL RELEASE)}T' ],
+    '=NextRelease' => [ format => '%v  %{yyyy-MM-dd HH:mm:ss VVV}d%{ (TRIAL RELEASE)}T' ],
     '=Trial' => [],
     'Git::Check' => [ allow_dirty => 'Changes', allow_dirty => 'META.json' ],
     'GithubMeta' => [ issues => 1 ],
@@ -71,7 +71,7 @@ my @plugin = (
 
     'CheckChangesHasContent' => [],
     'FakeRelease' => [],
-    'CopyFilesFromRelease' => [ match => '\.pm$' ],
+    'CopyFilesFromRelease' => [ filename => 'Changes', match => '\.pm$' ],
     'Git::Commit' => [ commit_msg => '%v%t', allow_dirty => 'Changes', allow_dirty => 'META.json', allow_dirty_match => '\.pm$' ],
     'Git::Tag' => [ tag_format => '%v%t', tag_message => '%v%t' ],
     'Git::Push' => [],
